@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">My Audio Player</string>
+    <string name="shuffle_placeholder">0</string>
+    <string name="duration_date_symbol">%1s, %2s</string>
+</resources>

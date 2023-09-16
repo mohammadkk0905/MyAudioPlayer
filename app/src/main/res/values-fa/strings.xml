@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="main_pages">صفحات اصلی</string>
+    <string name="permission_storage_denied">اجازه دسترسی به فضای ذخیره‌سازی رد شد.</string>
+    <string name="grant">اجازه دادن</string>
+    <string name="songs">آهنگ‌ها</string>
+    <string name="albums">آلبوم‌ها</string>
+    <plurals name="albums_plural">
+        <item quantity="one">%d آهنگ</item>
+        <item quantity="other">%d آهنگ</item>
+    </plurals>
+    <string name="artists">هنرمندان</string>
+    <string name="settings">"تنظیمات"</string>
+    <string name="shuffle_am">پخش اتفاقی همه آهنگ‌ها</string>
+    <string name="search">جستجو کردن</string>
+    <string name="order_by">مرتب سازی بر اساس</string>
+    <string name="title">عنوان</string>
+    <string name="album">آلبوم</string>
+    <string name="artist">هنرمند</string>
+    <string name="duration">مدت زمان</string>
+    <string name="date_added">تاریخ اضافه شدن</string>
+    <string name="song_count">تعداد آهنگ</string>
+    <string name="year">سال</string>
+    <string name="ascending">صعودی</string>
+    <string name="descending">نزولی</string>
+    <string name="share">اشتراک گذاری</string>
+    <string name="remove_from_device">حذف از دستگاه</string>
+    <string name="unknown_error_occurred">یک خطای ناشناخته رخ داد</string>
+    <string name="no_app_found">برنامهٔ معتبری پیدا نشد</string>
+    <string name="maximum_share_reached">شما نمی توانید این حجم از محتوا را به یکباره به اشتراک بگذارید</string>
+    <string name="error_symbol">خطا: %s</string>
+    <string name="set_as_ringtone">تنظیم به‌عنوان زنگ</string>
+    <string name="set_ringtone">تنظیم آهنگ زنگ</string>
+    <string name="set_ringtone_message">به برنامه My Audio Player اجازه دهید تنظیمات صدا را تغییر دهد</string>
+    <string name="set_as_ringtone_symbol">%1$s را به عنوان آهنگ زنگ خود تنظیم کن.</string>
+    <string name="delete_song">حذف آهنگ</string>
+    <string name="delete_songs">حذف آهنگ‌ها</string>
+    <string name="playing">در حال پخش</string>
+    <string name="previous">قبلی</string>
+    <string name="play_pause">پخش / مکث</string>
+    <string name="next">بعدی</string>
+    <string name="dismiss">رد</string>
+</resources>

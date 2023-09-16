@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+
+    <color name="red_500">#F44336</color>
+    <color name="pink_400">#EC407A</color>
+    <color name="purple_500">#9C27B0</color>
+    <color name="deep_purple_700">#512DA8</color>
+    <color name="deep_purple_a200">#7C4DFF</color>
+    <color name="blue_100">#BBDEFB</color>
+    <color name="blue_300">#64B5F6</color>
+    <color name="blue_500">#2196F3</color>
+    <color name="blue_a400">#2979FF</color>
+    <color name="light_blue_100">#B3E5FC</color>
+    <color name="light_blue_400">#29B6F6</color>
+    <color name="light_blue_500">#03A9F4</color>
+    <color name="light_blue_600">#039BE5</color>
+    <color name="light_blue_A400">#00B0FF</color>
+    <color name="cyan_200">#80DEEA</color>
+    <color name="cyan_300">#4DD0E1</color>
+    <color name="cyan_600">#00ACC1</color>
+    <color name="green_300">#81C784</color>
+    <color name="grey_50">#FAFAFA</color>
+    <color name="grey_300">#E0E0E0</color>
+    <color name="grey_800">#424242</color>
+    <color name="grey_900">#212121</color>
+    <color name="blue_grey_50">#ECEFF1</color>
+    <color name="blue_grey_800">#37474F</color>
+    <color name="blue_grey_900">#263238</color>
+
+    <color name="main_bg">#FCFCFC</color>
+</resources>

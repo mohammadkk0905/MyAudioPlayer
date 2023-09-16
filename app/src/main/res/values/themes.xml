@@ -1,0 +1,54 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.MyAudioPlayer" parent="@style/Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/light_blue_500</item>
+        <item name="colorPrimaryVariant">@color/light_blue_600</item>
+        <item name="colorSecondary">@color/cyan_300</item>
+        <item name="colorSecondaryVariant">@color/cyan_600</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">@color/main_bg</item>
+        <item name="popupMenuStyle">@style/PopupMenu</item>
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+    </style>
+
+    <style name="PopupMenu" parent="ThemeOverlay.MaterialComponents">
+        <item name="android:popupBackground">@drawable/bg_popupmenu</item>
+        <item name="android:popupElevation">2dp</item>
+    </style>
+
+    <style name="Theme.MyAudioPlayer.Stater" parent="Theme.MyAudioPlayer">
+        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="s">
+            @android:color/transparent
+        </item>
+        <item name="android:windowSplashScreenAnimationDuration" tools:targetApi="s">0</item>
+    </style>
+
+    <style name="BtnOverflowStyle">
+        <item name="srcCompat">@drawable/ic_more_vert</item>
+        <item name="android:layout_width">45dp</item>
+        <item name="android:layout_height">45dp</item>
+        <item name="android:scaleType">center</item>
+        <item name="android:background">@drawable/round_selector</item>
+        <item name="android:focusableInTouchMode">false</item>
+        <item name="android:focusable">false</item>
+    </style>
+
+    <style name="ImageView.Cover" parent="">
+        <item name="cornerSize">@dimen/spacing_small</item>
+    </style>
+
+    <style name="ImageView.ImageCurvedRounded" parent="">
+        <item name="cornerSizeTopLeft">@dimen/spacing_small</item>
+        <item name="cornerSizeTopRight">@dimen/spacing_small</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
+
+    <style name="ShapeAppearance.SmallComponent" parent="ShapeAppearance.MaterialComponents.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/spacing_small</item>
+    </style>
+</resources>

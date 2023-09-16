@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical"
+    tools:context=".activities.PlayerActivity">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/actionTop"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/white"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Light"
+        app:navigationIcon="@drawable/ic_west"
+        app:navigationIconTint="@color/grey_800">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:fontFamily="@font/vazir_regular"
+            android:text="@string/playing"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            android:textColor="@color/blue_grey_900" />
+
+        <TextView
+            android:id="@+id/tvCountTrack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginEnd="8dp"
+            android:fontFamily="@font/vazir_regular"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+            android:textColor="@color/blue_grey_800" />
+    </com.google.android.material.appbar.MaterialToolbar>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/trackImage"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginLeft="32dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginRight="32dp"
+            android:layout_marginBottom="16dp"
+            android:layout_weight="1"
+            android:background="@color/grey_300"
+            android:layoutDirection="ltr"
+            app:shapeAppearanceOverlay="@style/ImageView.Cover" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layoutDirection="ltr">
+
+            <TextView
+                android:id="@+id/tvTitleTrack"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_marginHorizontal="24dp"
+                android:ellipsize="end"
+                android:fontFamily="@font/vazir_regular"
+                android:maxLines="1"
+                android:textAlignment="center"
+                android:textColor="@color/grey_900"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvArtistTrack"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tvTitleTrack"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="8dp"
+                android:ellipsize="end"
+                android:fontFamily="@font/vazir_regular"
+                android:maxLines="1"
+                android:textAlignment="center"
+                android:textColor="@color/grey_800"
+                android:textSize="18sp"
+                android:textStyle="italic" />
+
+            <TextView
+                android:id="@+id/tvAlbumTrack"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tvArtistTrack"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="8dp"
+                android:ellipsize="end"
+                android:fontFamily="@font/vazir_regular"
+                android:maxLines="1"
+                android:textAlignment="center"
+                android:textColor="@color/grey_800"
+                android:textSize="18sp"
+                android:textStyle="italic" />
+
+            <androidx.appcompat.widget.AppCompatSeekBar
+                android:id="@+id/trackSlider"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tvAlbumTrack"
+                android:layout_marginLeft="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginRight="16dp"
+                android:maxHeight="5dp"
+                android:progressDrawable="@drawable/sk_progress_music"
+                android:splitTrack="false"
+                android:thumb="@drawable/sk_thumb_music" />
+
+            <TextView
+                android:id="@+id/tvPlayedTimeTrack"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/trackSlider"
+                android:layout_alignStart="@+id/trackSlider"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="8dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"
+                android:textColor="@color/grey_800" />
+
+            <TextView
+                android:id="@+id/tvTotalTimeTrack"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/trackSlider"
+                android:layout_alignEnd="@+id/trackSlider"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="4dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp"
+                android:textColor="@color/grey_800" />
+
+            <ImageButton
+                android:id="@+id/btnPreviousTrack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_below="@+id/tvPlayedTimeTrack"
+                android:layout_marginTop="@dimen/spacing_mid_medium"
+                android:layout_marginEnd="@dimen/spacing_small"
+                android:layout_toStartOf="@+id/fabPlayPause"
+                android:background="@drawable/round_selector"
+                android:contentDescription="@string/previous"
+                android:src="@drawable/ic_skip_previous"
+                app:tint="@color/grey_800" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fabPlayPause"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tvPlayedTimeTrack"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:layout_marginBottom="@dimen/spacing_mid_medium"
+                android:contentDescription="@string/play_pause"
+                app:backgroundTint="@color/blue_a400"
+                app:srcCompat="@drawable/ic_play"
+                app:tint="@color/grey_50" />
+
+            <ImageButton
+                android:id="@+id/btnNextTrack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_below="@+id/tvPlayedTimeTrack"
+                android:layout_marginStart="@dimen/spacing_small"
+                android:layout_marginTop="@dimen/spacing_mid_medium"
+                android:layout_toEndOf="@+id/fabPlayPause"
+                android:background="@drawable/round_selector"
+                android:contentDescription="@string/next"
+                android:src="@drawable/ic_skip_next"
+                app:tint="@color/grey_800" />
+        </RelativeLayout>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+</LinearLayout>

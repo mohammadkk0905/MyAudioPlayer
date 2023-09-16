@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="?attr/actionBarSize"
+    android:background="?attr/selectableItemBackground">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/trackImage"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="@dimen/spacing_small"
+        android:background="@color/grey_300"
+        android:scaleType="center"
+        app:shapeAppearanceOverlay="@style/ImageView.Cover"
+        app:srcCompat="@drawable/ic_audiotrack" />
+
+    <TextView
+        android:id="@+id/tvInfoTrack"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginHorizontal="@dimen/spacing_small"
+        android:layout_toStartOf="@+id/btnPlayPause"
+        android:layout_toEndOf="@+id/trackImage"
+        android:fontFamily="@font/vazir_regular"
+        android:maxLines="2"
+        android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
+        android:textColor="@color/grey_900" />
+
+    <ImageView
+        android:id="@+id/btnPlayPause"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="@dimen/spacing_small"
+        android:background="@drawable/round_selector"
+        android:contentDescription="@string/play_pause"
+        android:scaleType="center"
+        android:src="@drawable/ic_play"
+        app:tint="@color/grey_800" />
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/songProgress"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="@dimen/spacing_small"
+        app:trackCornerRadius="@dimen/spacing_tiny" />
+
+</RelativeLayout>

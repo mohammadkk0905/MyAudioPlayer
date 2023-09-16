@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="def_list_columns">1</integer>
+    <integer name="def_list_columns_land">2</integer>
+    <integer name="def_grid_columns">2</integer>
+    <integer name="def_grid_columns_land">4</integer>
+</resources>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="group_one" type="id" />
+    <item name="group_two" type="id" />
+
+    <item name="action_sort_title" type="id" />
+    <item name="action_sort_album" type="id" />
+    <item name="action_sort_artist" type="id" />
+    <item name="action_sort_duration" type="id" />
+    <item name="action_sort_date_added" type="id" />
+    <item name="action_sort_year" type="id" />
+    <item name="action_sort_songs" type="id" />
+
+    <item name="action_sort_ascending" type="id" />
+    <item name="action_sort_descending" type="id" />
+</resources>
