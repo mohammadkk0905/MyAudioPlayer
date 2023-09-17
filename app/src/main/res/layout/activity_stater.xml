@@ -15,9 +15,9 @@
         android:contentDescription="@string/app_name"
         android:scaleX="0.5"
         android:scaleY="0.5"
-        android:src="@drawable/ic_music_starter"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_start_music" />
 </androidx.constraintlayout.motion.widget.MotionLayout>

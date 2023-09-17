@@ -4,13 +4,14 @@ import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.widget.ImageView
-import android.widget.SeekBar
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.slider.Slider
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.mohammadkk.myaudioplayer.Constant
+import com.mohammadkk.myaudioplayer.Constant.SET_PROGRESS
 import com.mohammadkk.myaudioplayer.R
 import com.mohammadkk.myaudioplayer.databinding.ActivityPlayerBinding
 import com.mohammadkk.myaudioplayer.extensions.applyColor
@@ -29,11 +30,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
+import kotlin.math.max
 
 class PlayerActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPlayerBinding
     private val playbackViewModel: PlaybackViewModel by viewModels()
-    private var isTouchSlider = false
     private var mPlaceholder: Drawable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,7 +83,7 @@ class PlayerActivity : AppCompatActivity() {
             if (!it) onNoStoragePermission()
         }
         playbackViewModel.position.observe(this) {
-            onProgressUpdated(it)
+            setProgressSlider(it)
         }
     }
     private val mBackPressedCallback = object : OnBackPressedCallback(true) {
@@ -118,17 +119,40 @@ class PlayerActivity : AppCompatActivity() {
             MusicService.mCurrIndex.plus(1),
             MusicService.mSongs.size
         )
-        binding.trackSlider.max = song.duration
-        binding.tvTotalTimeTrack.text = song.duration.toFormattedDuration(true)
+        setMaxSlider(song.duration)
+    }
+    private fun getProgressSlider(): Int {
+        return binding.trackSlider.value.toInt()
+    }
+    private fun getMaxSlider(): Int {
+        return binding.trackSlider.valueTo.toInt()
+    }
+    private fun setMaxSlider(value: Int) {
+        val toValue = max(value, 1)
+        binding.trackSlider.isEnabled = value > 0
+        if (getProgressSlider() > toValue) {
+            binding.trackSlider.value = toValue.toFloat()
+        }
+        binding.trackSlider.valueTo = toValue.toFloat()
+        binding.tvTotalTimeTrack.text = value.toFormattedDuration(true)
+    }
+    private fun setProgressSlider(value: Int) {
+        val from = max(value, 0)
+        if (from <= getMaxSlider() && !binding.trackSlider.isActivated) {
+            binding.trackSlider.value = from.toFloat()
+            binding.tvPlayedTimeTrack.text = from.toFormattedDuration(true)
+        }
     }
     private fun initMediaButtons() {
         binding.btnPreviousTrack.setOnClickListener {
+            setProgressSlider(0)
             sendIntent(Constant.PREVIOUS)
         }
         binding.fabPlayPause.setOnClickListener {
             sendIntent(Constant.PLAY_PAUSE)
         }
         binding.btnNextTrack.setOnClickListener {
+            setProgressSlider(0)
             sendIntent(Constant.NEXT)
         }
         binding.tvPlayedTimeTrack.setOnClickListener {
@@ -139,26 +163,35 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
     private fun initTrackSlider() {
-        binding.trackSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            var currentProgress = 0
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (fromUser) currentProgress = progress
-                binding.tvPlayedTimeTrack.text = progress.toFormattedDuration(true)
+        binding.trackSlider.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
+            override fun onStartTrackingTouch(slider: Slider) {
+                binding.trackSlider.isActivated = true
             }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                isTouchSlider = true
-            }
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                isTouchSlider = false
-                if (seekBar != null) {
-                    Intent(this@PlayerActivity, MusicService::class.java).apply {
-                        putExtra(Constant.PROGRESS, seekBar.progress)
-                        action = Constant.SET_PROGRESS
-                        startService(this)
-                    }
+            override fun onStopTrackingTouch(slider: Slider) {
+                binding.trackSlider.isActivated = false
+                Intent(this@PlayerActivity, MusicService::class.java).apply {
+                    putExtra(Constant.PROGRESS, slider.value.toInt())
+                    action = SET_PROGRESS
+                    startService(this)
                 }
             }
         })
+        binding.trackSlider.addOnChangeListener { _, value, fromUser ->
+            if (fromUser) {
+                val from = max(value.toInt(), 0)
+                val time = if (from <= getMaxSlider()) {
+                    from.toFormattedDuration(true)
+                } else  "--:--"
+                binding.tvPlayedTimeTrack.text = time
+            }
+        }
+        binding.trackSlider.setLabelFormatter {
+            val from = max(it.toInt(), 0)
+            val time = if (from <= getMaxSlider()) {
+                from.toFormattedDuration(true)
+            } else  "--:--"
+            return@setLabelFormatter time
+        }
     }
     private fun resolveSong(): Song? {
         if (intent.hasExtra(Constant.SONG)) {
@@ -184,10 +217,6 @@ class PlayerActivity : AppCompatActivity() {
     private fun onNoStoragePermission() {
         toast(R.string.permission_storage_denied)
         finish()
-    }
-    private fun onProgressUpdated(progress: Int) {
-        if (!isTouchSlider)
-            binding.trackSlider.progress = progress
     }
     private fun onSongChanged(song: Song?) {
         if (song == null) {

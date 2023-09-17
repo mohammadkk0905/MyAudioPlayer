@@ -95,17 +95,23 @@ object Libraries {
         var mMediaTitle = mediaTitle
         return try {
             if (mMediaTitle.isNullOrEmpty()) return "-"
-            mMediaTitle = mMediaTitle.trim { it <= ' ' }.lowercase()
-            if (stripPrefix) {
-                if (mMediaTitle.startsWith("the ")) {
-                    mMediaTitle = mMediaTitle.substring(4)
-                } else if (mMediaTitle.startsWith("a ")) {
-                    mMediaTitle = mMediaTitle.substring(2)
-                }
-            }
+            mMediaTitle = mMediaTitle.trim { it <= ' ' }
+            if (stripPrefix) mMediaTitle = sliceArticle(mMediaTitle)
             mMediaTitle.firstOrNull()?.uppercase() ?: ""
         } catch (e: Exception) {
             ""
         }
+    }
+    private fun sliceArticle(title: String): String {
+        if (title.length > 5 && title.startsWith("the ", true)) {
+            return title.slice(4..title.lastIndex)
+        }
+        if (title.length > 4 && title.startsWith("an ", true)) {
+            return title.slice(3..title.lastIndex)
+        }
+        if (title.length > 3 && title.startsWith("a ", true)) {
+            return title.slice(2..title.lastIndex)
+        }
+        return title
     }
 }

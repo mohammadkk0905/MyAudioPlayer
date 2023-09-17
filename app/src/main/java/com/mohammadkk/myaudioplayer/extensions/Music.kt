@@ -16,11 +16,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private const val SECOND_MILLIS = 1000
-private const val MINUTE_MILLIS = 60 * SECOND_MILLIS
-private const val HOUR_MILLIS = 60 * MINUTE_MILLIS
-private const val DAY_MILLIS = 24 * HOUR_MILLIS
-
 fun Long.toContentUri(): Uri = ContentUris.withAppendedId(
     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
     this
@@ -30,15 +25,24 @@ fun Long.toAlbumArtURI(): Uri = ContentUris.withAppendedId(
     this
 )
 fun Int.toFormattedDuration(isSeekBar: Boolean): String {
-    val seconds = this / 1000
-    val h = seconds / 3600
-    val m = seconds % 3600 / 60
-    val s = seconds % 60
-    return if (seconds >= 3600) {
-        String.format(Locale.getDefault(), "%02d:%02d:%02d", h, m, s)
+    var mSeconds = this / 1000
+    var hours = 0
+    var minutes = 0
+    if (mSeconds >= 3600) {
+        hours = mSeconds / 3600
+        mSeconds -= hours * 3600
+    }
+    if (mSeconds >= 60) {
+        minutes = mSeconds / 60
+        mSeconds -= minutes * 60
+    }
+    val seconds = mSeconds
+
+    return if (hours > 0) {
+        String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds)
     } else {
         val defFormat = if (!isSeekBar) "%02dm:%02ds" else "%02d:%02d"
-        String.format(Locale.getDefault(), defFormat, m, s)
+        String.format(Locale.getDefault(), defFormat, minutes, seconds)
     }
 }
 fun Int.toFormattedDate(): String {

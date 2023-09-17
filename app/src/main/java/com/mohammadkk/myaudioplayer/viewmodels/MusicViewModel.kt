@@ -108,7 +108,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             val album: Album
             if (itemsMap.containsKey(song.albumId)) {
                 album = itemsMap[song.albumId]!!
-                album.duration += album.duration
+                album.duration += song.duration
                 album.songs.add(song)
             } else {
                 val list = mutableListOf<Song>()
