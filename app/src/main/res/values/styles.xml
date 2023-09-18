@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="TextAppearance.Audio.BodySmall" parent="TextAppearance.Material3.BodySmall">
+        <item name="fontFamily">@font/vazir_regular</item>
+        <item name="android:fontFamily">@font/vazir_regular</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:letterSpacing">0.020</item>
+    </style>
+
+    <style name="TextAppearance.Audio.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="fontFamily">@font/vazir_regular</item>
+        <item name="android:fontFamily">@font/vazir_regular</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:letterSpacing">0.025</item>
+    </style>
+
+    <style name="PopupMenu" parent="ThemeOverlay.MaterialComponents">
+        <item name="android:popupBackground">@drawable/bg_popupmenu</item>
+        <item name="android:popupElevation">2dp</item>
+    </style>
+
+    <style name="BtnOverflowStyle">
+        <item name="srcCompat">@drawable/ic_more_vert</item>
+        <item name="android:layout_width">45dp</item>
+        <item name="android:layout_height">45dp</item>
+        <item name="android:scaleType">center</item>
+        <item name="android:background">@drawable/round_selector</item>
+        <item name="android:focusableInTouchMode">false</item>
+        <item name="android:focusable">false</item>
+    </style>
+
+    <style name="ImageView.Cover" parent="">
+        <item name="cornerSize">@dimen/spacing_small</item>
+    </style>
+
+    <style name="ImageView.ImageCurvedRounded" parent="">
+        <item name="cornerSizeTopLeft">@dimen/spacing_small</item>
+        <item name="cornerSizeTopRight">@dimen/spacing_small</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
+    <style name="ShapeAppearance.SmallComponent" parent="ShapeAppearance.MaterialComponents.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/spacing_small</item>
+    </style>
+</resources>

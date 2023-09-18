@@ -41,6 +41,7 @@ import com.mohammadkk.myaudioplayer.viewmodels.MusicViewModel
 class MainActivity : BaseActivity(), AdapterListener {
     private lateinit var binding: ActivityMainBinding
     private lateinit var binding2: PlayerControllerBinding
+    private val settings get() = BaseSettings.getInstance()
     private val musicViewModel: MusicViewModel by viewModels()
     private var mActionMode: ActionMode? = null
 
@@ -59,7 +60,7 @@ class MainActivity : BaseActivity(), AdapterListener {
             ActivityCompat.requestPermissions(this, arrayOf(permission), Constant.PERMISSION_REQUEST_STORAGE)
         }
         binding.mainActionBar.setNavigationOnClickListener {
-            if (MusicService.isInitialize()) sendIntent(Constant.FINISH)
+            if (MusicService.isMusicPlayer()) sendIntent(Constant.FINISH)
             finishAndRemoveTask()
         }
     }
@@ -188,7 +189,7 @@ class MainActivity : BaseActivity(), AdapterListener {
     }
     override fun onResume() {
         super.onResume()
-        if (MusicService.isInitialize()) {
+        if (MusicService.isMusicPlayer()) {
             val visibility = binding2.nowPlayerFrag.visibility
             if (visibility != View.VISIBLE) {
                 binding2.nowPlayerFrag.visibility = View.VISIBLE

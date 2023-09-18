@@ -28,6 +28,10 @@ class BaseSettings(context: Context) {
         get() = prefs.getBoolean("swap_prev_next", false)
         set(value) = prefs.edit { putBoolean("swap_prev_next", value) }
 
+    var gaplessPlayback: Boolean
+        get() = prefs.getBoolean("gapless_playback", false)
+        set(value) = prefs.edit { putBoolean("gapless_playback", value) }
+
     var autoplay: Boolean
         get() = prefs.getBoolean("autoplay", true)
         set(value) = prefs.edit { putBoolean("autoplay", value) }

@@ -108,7 +108,7 @@ class NowPlayingFragment : Fragment(R.layout.fragment_now_playing) {
     }
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
-        if (MusicService.isInitialize()) {
+        if (MusicService.isMusicPlayer()) {
             context?.sendIntent(Constant.BROADCAST_STATUS)
         }
     }

@@ -117,7 +117,7 @@ class TracksActivity : BaseActivity(), AdapterListener {
     }
     override fun onResume() {
         super.onResume()
-        if (MusicService.isInitialize()) {
+        if (MusicService.isMusicPlayer()) {
             val visibility = binding.navFragPlayer.visibility
             if (visibility != View.VISIBLE) {
                 binding.navFragPlayer.visibility = View.VISIBLE

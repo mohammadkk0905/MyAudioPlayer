@@ -29,7 +29,7 @@ class NotificationUtils(private val service: MusicService, private val mediaSess
         var postTime = 0L
         var multiBoolean = false
         if (playing) {
-            postTime = System.currentTimeMillis() - (service.mPlayer?.currentPosition ?: 0)
+            postTime = System.currentTimeMillis() - (MusicService.mPlayer?.position() ?: 0)
             multiBoolean = true
         }
         val nDismissedIntent = Intent(service, NotificationDismissedReceiver::class.java).apply {

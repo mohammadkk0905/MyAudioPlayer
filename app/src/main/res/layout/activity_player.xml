@@ -108,47 +108,20 @@
                 android:textSize="18sp"
                 android:textStyle="italic" />
 
-            <com.google.android.material.slider.Slider
+            <com.mohammadkk.myaudioplayer.ui.MusicSeekBar
                 android:id="@+id/trackSlider"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/tvAlbumTrack"
                 android:layout_marginLeft="16dp"
                 android:layout_marginTop="@dimen/spacing_small"
-                android:layout_marginRight="16dp"
-                android:contentDescription="@string/playing"
-                android:valueFrom="0"
-                android:valueTo="1" />
-
-            <TextView
-                android:id="@+id/tvPlayedTimeTrack"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/trackSlider"
-                android:layout_alignStart="@+id/trackSlider"
-                android:layout_marginStart="@dimen/spacing_small"
-                android:layout_marginTop="@dimen/spacing_tiny"
-                android:paddingLeft="2dp"
-                android:paddingRight="2dp"
-                android:textColor="@color/grey_800" />
-
-            <TextView
-                android:id="@+id/tvTotalTimeTrack"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/trackSlider"
-                android:layout_alignEnd="@+id/trackSlider"
-                android:layout_marginTop="@dimen/spacing_tiny"
-                android:layout_marginEnd="@dimen/spacing_small"
-                android:paddingLeft="2dp"
-                android:paddingRight="2dp"
-                android:textColor="@color/grey_800" />
+                android:layout_marginRight="16dp" />
 
             <ImageButton
                 android:id="@+id/btnPreviousTrack"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_below="@+id/tvPlayedTimeTrack"
+                android:layout_below="@+id/trackSlider"
                 android:layout_marginTop="@dimen/spacing_mid_medium"
                 android:layout_marginEnd="@dimen/spacing_small"
                 android:layout_toStartOf="@+id/fabPlayPause"
@@ -161,7 +134,7 @@
                 android:id="@+id/fabPlayPause"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/tvPlayedTimeTrack"
+                android:layout_below="@+id/trackSlider"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="@dimen/spacing_small"
                 android:layout_marginBottom="@dimen/spacing_mid_medium"
@@ -174,7 +147,7 @@
                 android:id="@+id/btnNextTrack"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_below="@+id/tvPlayedTimeTrack"
+                android:layout_below="@+id/trackSlider"
                 android:layout_marginStart="@dimen/spacing_small"
                 android:layout_marginTop="@dimen/spacing_mid_medium"
                 android:layout_toEndOf="@+id/fabPlayPause"
