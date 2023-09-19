@@ -58,7 +58,11 @@ class SongsFragment : Fragment(), FragmentLibraries {
         }
         binding.fabShuffle.setOnClickListener {
             songsAdapter?.let { adapter ->
-                adapter.startPlayer(nextInt(adapter.itemCount))
+                if (adapter.itemCount > 0) {
+                    adapter.startPlayer(nextInt(adapter.itemCount))
+                } else {
+                    binding.fabShuffle.hide()
+                }
             }
         }
     }

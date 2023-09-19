@@ -3,6 +3,9 @@
     <string name="main_pages">صفحات اصلی</string>
     <string name="permission_storage_denied">اجازه دسترسی به فضای ذخیره‌سازی رد شد.</string>
     <string name="grant">اجازه دادن</string>
+    <string name="yes">بله</string>
+    <string name="no">نه</string>
+    <string name="on_close_activity">توقف پخش ؟</string>
     <string name="songs">آهنگ‌ها</string>
     <string name="albums">آلبوم‌ها</string>
     <plurals name="albums_plural">

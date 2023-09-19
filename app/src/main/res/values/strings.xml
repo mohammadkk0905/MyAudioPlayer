@@ -3,6 +3,9 @@
     <string name="main_pages">Main pages</string>
     <string name="permission_storage_denied">Permission to access storage denied.</string>
     <string name="grant">Grant</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="on_close_activity">Stop playback ?</string>
     <string name="songs">Songs</string>
     <string name="albums">Albums</string>
     <plurals name="albums_plural">

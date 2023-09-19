@@ -25,8 +25,7 @@ import com.mohammadkk.myaudioplayer.R
 import com.mohammadkk.myaudioplayer.extensions.getAlbumArt
 import com.mohammadkk.myaudioplayer.extensions.getTrackArt
 import com.mohammadkk.myaudioplayer.extensions.hasPermission
-import com.mohammadkk.myaudioplayer.extensions.stopForegroundNotRemoved
-import com.mohammadkk.myaudioplayer.extensions.stopForegroundRemoved
+import com.mohammadkk.myaudioplayer.extensions.stopForegroundCompat
 import com.mohammadkk.myaudioplayer.extensions.toContentUri
 import com.mohammadkk.myaudioplayer.models.Song
 import com.mohammadkk.myaudioplayer.utils.Libraries
@@ -63,7 +62,7 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
         }
         mClicksCount = 0
     }
-    private val notificationHandler = Handler(Looper.getMainLooper())
+    private var isForeground = false
     private var notificationUtils: NotificationUtils? = null
     private val mMediaSessionCallback = object : MediaSessionCompat.Callback() {
         override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
@@ -116,6 +115,7 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
         destroyPlayer()
         mMediaSession?.isActive = false
         mMediaSession = null
+        isForeground = false
     }
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (!Constant.isQPlus() && !hasPermission(Constant.storagePermissionApi())) {
@@ -227,7 +227,8 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
         updateMediaSessionState()
         saveSongProgress()
         if (!Constant.isSPlus()) {
-            stopForegroundNotRemoved()
+            stopForegroundCompat(false)
+            isForeground = false
         }
     }
     private fun handleFinish(isDismiss: Boolean) {
@@ -492,30 +493,39 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
         )
     }
     private fun startForegroundWithNotify() {
-        notificationHandler.removeCallbacksAndMessages(null)
-        notificationHandler.postDelayed({
-            if (mCurrSongCover?.isRecycled == true) {
-                mCurrSongCover = BitmapFactory.decodeResource(resources, R.drawable.ic_music_large)
+        if (mCurrSongCover?.isRecycled == true) {
+            mCurrSongCover = BitmapFactory.decodeResource(resources, R.drawable.ic_music_large)
+        }
+        if (notificationUtils != null && (mCurrSong?.id ?: -1L) != -1L) {
+            if (isForeground && !isPlaying()) {
+                if (!Constant.isSPlus()) {
+                    stopForegroundCompat(false)
+                    isForeground = false
+                }
             }
-            notificationUtils?.createMusicNotification(
+            notificationUtils!!.createMusicNotification(
                 song = mCurrSong,
                 playing = isPlaying(),
                 largeIcon = mCurrSongCover
             ) {
-                notificationUtils!!.notify(NotificationUtils.NOTIFICATION_ID, it)
-                try {
-                    if (Constant.isQPlus()) {
-                        startForeground(
-                            NotificationUtils.NOTIFICATION_ID, it,
-                            ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-                        )
-                    } else {
-                        startForeground(NotificationUtils.NOTIFICATION_ID, it)
+                if (!isForeground) {
+                    try {
+                        if (Constant.isQPlus()) {
+                            startForeground(
+                                NotificationUtils.NOTIFICATION_ID, it,
+                                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                            )
+                        } else {
+                            startForeground(NotificationUtils.NOTIFICATION_ID, it)
+                        }
+                        isForeground = true
+                    } catch (ignored: IllegalStateException) {
                     }
-                } catch (ignored: IllegalStateException) {
+                } else {
+                    notificationUtils!!.notify(NotificationUtils.NOTIFICATION_ID, it)
                 }
             }
-        }, 200)
+        }
     }
     private fun prepareNext(nextSong: Song? = null) {
         mNextSong = if (nextSong != null) {
@@ -573,9 +583,13 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
     }
     private fun stopForegroundOrNotification() {
         try {
-            notificationHandler.removeCallbacksAndMessages(null)
-            stopForegroundRemoved()
-            notificationUtils?.cancel(NotificationUtils.NOTIFICATION_ID)
+            if (isForeground) {
+                stopForegroundCompat(true)
+                notificationUtils?.cancel(NotificationUtils.NOTIFICATION_ID)
+                isForeground = false
+            } else {
+                notificationUtils?.cancel(NotificationUtils.NOTIFICATION_ID)
+            }
         } catch (e: IllegalArgumentException) {
             e.printStackTrace()
         }
@@ -604,6 +618,6 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
         var mCurrIndex = 0
 
         fun isMusicPlayer() = mPlayer != null
-        private fun isPlaying() = mPlayer != null && mPlayer!!.isPlaying()
+        fun isPlaying() = mPlayer != null && mPlayer!!.isPlaying()
     }
 }

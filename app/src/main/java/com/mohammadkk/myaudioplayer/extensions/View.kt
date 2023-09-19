@@ -56,3 +56,10 @@ fun Service.stopForegroundNotRemoved() {
 fun Service.stopForegroundRemoved() {
     ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
 }
+fun Service.stopForegroundCompat(isRemoved: Boolean) {
+    if (isRemoved) {
+        ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
+    } else {
+        ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_DETACH)
+    }
+}

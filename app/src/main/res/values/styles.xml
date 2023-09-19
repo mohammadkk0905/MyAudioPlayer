@@ -14,6 +14,80 @@
         <item name="android:letterSpacing">0.025</item>
     </style>
 
+    <style name="TextAppearance.Action.TitleSmall" parent="TextAppearance.Material3.TitleSmall">
+        <item name="fontFamily">@font/vazir_regular</item>
+        <item name="android:fontFamily">@font/vazir_regular</item>
+    </style>
+
+    <style name="TextAppearance.Action.Subtitle1" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="fontFamily">@font/vazir_regular</item>
+        <item name="android:fontFamily">@font/vazir_regular</item>
+    </style>
+
+    <style name="TextAppearance.Audio.TitleMidLarge" parent="TextAppearance.Material3.TitleMedium">
+        <item name="fontFamily">@font/vazir_regular</item>
+        <item name="android:fontFamily">@font/vazir_regular</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="TextAppearance.Audio.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="fontFamily">@font/vazir_regular</item>
+        <item name="android:fontFamily">@font/vazir_regular</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:letterSpacing">0.015</item>
+    </style>
+
+    <style name="Widget.Audio.TextView.Base" parent="Widget.AppCompat.TextView">
+        <item name="android:textAlignment">viewStart</item>
+    </style>
+
+    <style name="Widget.Audio.Toolbar" parent="Widget.MaterialComponents.Toolbar">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="titleTextAppearance">@style/TextAppearance.Action.TitleSmall</item>
+        <item name="subtitleTextAppearance">@style/TextAppearance.Action.Subtitle1</item>
+        <item name="android:background">@color/main_bg</item>
+        <item name="android:elevation">@dimen/spacing_tiny</item>
+    </style>
+
+    <style name="Widget.Audio.Toolbar.Icon" parent="Widget.Audio.Toolbar">
+        <item name="navigationIcon">@drawable/ic_west</item>
+    </style>
+
+    <style name="Widget.Audio.Image.Full" parent="">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="layout_constraintDimensionRatio">1</item>
+        <item name="android:background">@color/grey_300</item>
+        <item name="shapeAppearanceOverlay">@style/ImageView.Cover</item>
+    </style>
+
+    <style name="Widget.Audio.TextView.Primary" parent="Widget.Audio.TextView.Base">
+        <item name="android:ellipsize">marquee</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:marqueeRepeatLimit">marquee_forever</item>
+        <item name="android:textAppearance">@style/TextAppearance.Audio.TitleMidLarge</item>
+    </style>
+
+    <style name="Widget.Audio.TextView.Secondary" parent="Widget.Audio.TextView.Base">
+        <item name="android:ellipsize">end</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textColor">?android:attr/textColorSecondary</item>
+        <item name="android:textAppearance">@style/TextAppearance.Audio.BodyLarge</item>
+    </style>
+
+    <style name="Widget.Audio.FloatingActionButton.PlayPause" parent="Widget.MaterialComponents.FloatingActionButton">
+        <item name="backgroundTint">@color/blue_500</item>
+        <item name="tint">@color/grey_50</item>
+        <item name="rippleColor">?attr/colorControlHighlight</item>
+        <item name="fabCustomSize">64dp</item>
+        <item name="maxImageSize">32dp</item>
+        <item name="android:elevation">0dp</item>
+        <item name="elevation">0dp</item>
+    </style>
+
     <style name="PopupMenu" parent="ThemeOverlay.MaterialComponents">
         <item name="android:popupBackground">@drawable/bg_popupmenu</item>
         <item name="android:popupElevation">2dp</item>

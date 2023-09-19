@@ -20,6 +20,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayoutMediator
 import com.mohammadkk.myaudioplayer.BaseSettings
@@ -41,7 +42,6 @@ import com.mohammadkk.myaudioplayer.viewmodels.MusicViewModel
 class MainActivity : BaseActivity(), AdapterListener {
     private lateinit var binding: ActivityMainBinding
     private lateinit var binding2: PlayerControllerBinding
-    private val settings get() = BaseSettings.getInstance()
     private val musicViewModel: MusicViewModel by viewModels()
     private var mActionMode: ActionMode? = null
 
@@ -60,8 +60,24 @@ class MainActivity : BaseActivity(), AdapterListener {
             ActivityCompat.requestPermissions(this, arrayOf(permission), Constant.PERMISSION_REQUEST_STORAGE)
         }
         binding.mainActionBar.setNavigationOnClickListener {
-            if (MusicService.isMusicPlayer()) sendIntent(Constant.FINISH)
-            finishAndRemoveTask()
+            if (MusicService.isPlaying()) {
+                MaterialAlertDialogBuilder(this)
+                    .setCancelable(false)
+                    .setTitle(R.string.app_name)
+                    .setMessage(R.string.on_close_activity)
+                    .setPositiveButton(R.string.yes) { _, _ ->
+                        if (MusicService.isPlaying()) sendIntent(Constant.FINISH)
+                        finishAndRemoveTask()
+                    }
+                    .setNegativeButton(R.string.no) { _, _ ->
+                        finishAndRemoveTask()
+                    }
+                    .setNeutralButton(android.R.string.cancel, null)
+                    .show()
+            } else {
+                if (MusicService.isPlaying()) sendIntent(Constant.FINISH)
+                finishAndRemoveTask()
+            }
         }
     }
     private val mBackPressedCallback = object : OnBackPressedCallback(true) {
