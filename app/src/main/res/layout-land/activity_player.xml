@@ -20,14 +20,15 @@
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/playback_cover"
         style="@style/Widget.Audio.Image.Full"
-        android:scaleType="centerCrop"
         android:layout_marginStart="@dimen/spacing_medium"
         android:layout_marginTop="@dimen/spacing_medium"
+        android:scaleType="centerCrop"
         app:layout_constraintBottom_toTopOf="@+id/playback_seek_bar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/playback_toolbar"
         app:layout_constraintVertical_chainStyle="packed"
-        app:srcCompat="@drawable/ic_audiotrack" />
+        tools:src="@drawable/ic_audiotrack"
+        tools:tint="@color/pink_400" />
 
     <FrameLayout
         android:id="@+id/playback_song_container"

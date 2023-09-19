@@ -183,21 +183,35 @@ class PlayerActivity : AppCompatActivity() {
         binding.playbackSkipNext.rotation = if (isRtlLocal) 180f else 0f
         binding.playbackShuffle.setOnClickListener {  }
         binding.playbackSkipPrev.setOnClickListener {
-            binding.playbackSeekBar.positionMills = 0
-            if (isRtlLocal) {
-                sendIntent(Constant.NEXT)
-            } else sendIntent(Constant.PREVIOUS)
+            if (binding.playbackSeekBar.positionMills >= 5) {
+                onPrevSong()
+            } else {
+                binding.playbackSeekBar.positionMills = 0
+                onPrevSong()
+            }
         }
         binding.playbackPlayPause.setOnClickListener {
             sendIntent(Constant.PLAY_PAUSE)
         }
         binding.playbackSkipNext.setOnClickListener {
-            binding.playbackSeekBar.positionMills = 0
-            if (isRtlLocal) {
-                sendIntent(Constant.PREVIOUS)
-            } else sendIntent(Constant.NEXT)
+            if (binding.playbackSeekBar.positionMills >= 5) {
+                onNextSong()
+            } else {
+                binding.playbackSeekBar.positionMills = 0
+                onNextSong()
+            }
         }
         binding.playbackRepeat.setOnClickListener {  }
+    }
+    private fun onPrevSong() {
+        if (isRtlLocal) {
+            sendIntent(Constant.NEXT)
+        } else sendIntent(Constant.PREVIOUS)
+    }
+    private fun onNextSong() {
+        if (isRtlLocal) {
+            sendIntent(Constant.PREVIOUS)
+        } else sendIntent(Constant.NEXT)
     }
     private fun isFadeAnim(): Boolean {
         return intent?.getBooleanExtra("fade_anim", false) ?: false

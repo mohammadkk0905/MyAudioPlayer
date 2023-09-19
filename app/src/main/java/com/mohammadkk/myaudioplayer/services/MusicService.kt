@@ -497,12 +497,6 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
             mCurrSongCover = BitmapFactory.decodeResource(resources, R.drawable.ic_music_large)
         }
         if (notificationUtils != null && (mCurrSong?.id ?: -1L) != -1L) {
-            if (isForeground && !isPlaying()) {
-                if (!Constant.isSPlus()) {
-                    stopForegroundCompat(false)
-                    isForeground = false
-                }
-            }
             notificationUtils!!.createMusicNotification(
                 song = mCurrSong,
                 playing = isPlaying(),
@@ -580,6 +574,7 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
     }
     override fun onPlayStateChanged() {
         songStateChanged()
+        updateMediaSessionState()
     }
     private fun stopForegroundOrNotification() {
         try {

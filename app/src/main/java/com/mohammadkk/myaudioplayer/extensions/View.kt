@@ -50,12 +50,6 @@ fun MenuItem.setTitleColor(color: Int) {
         title = this
     }
 }
-fun Service.stopForegroundNotRemoved() {
-    ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_DETACH)
-}
-fun Service.stopForegroundRemoved() {
-    ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
-}
 fun Service.stopForegroundCompat(isRemoved: Boolean) {
     if (isRemoved) {
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)

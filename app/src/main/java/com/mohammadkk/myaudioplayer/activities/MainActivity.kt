@@ -75,7 +75,7 @@ class MainActivity : BaseActivity(), AdapterListener {
                     .setNeutralButton(android.R.string.cancel, null)
                     .show()
             } else {
-                if (MusicService.isPlaying()) sendIntent(Constant.FINISH)
+                if (MusicService.isMusicPlayer()) sendIntent(Constant.FINISH)
                 finishAndRemoveTask()
             }
         }
