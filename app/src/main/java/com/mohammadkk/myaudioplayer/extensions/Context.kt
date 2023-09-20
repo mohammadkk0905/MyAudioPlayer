@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Handler
@@ -20,6 +21,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import com.bumptech.glide.util.Util.isOnMainThread
+import com.google.android.material.color.MaterialColors
 import com.mohammadkk.myaudioplayer.Constant
 import com.mohammadkk.myaudioplayer.R
 import com.mohammadkk.myaudioplayer.models.Song
@@ -64,6 +66,11 @@ fun Context.getColorCompat(@ColorRes id: Int): Int {
 }
 fun Context.getDrawableCompat(@DrawableRes id: Int): Drawable? {
     return ResourcesCompat.getDrawable(resources, id, theme)
+}
+fun Context.getPrimaryColor(): Int {
+    var primary = MaterialColors.getColor(this, androidx.appcompat.R.attr.colorPrimary, Color.TRANSPARENT)
+    if (primary == Color.TRANSPARENT) primary = getColorCompat(R.color.light_blue_500)
+    return primary
 }
 fun Activity.shareSongsIntent(songs: List<Song>) {
     if (songs.size == 1) {

@@ -14,7 +14,6 @@
     </plurals>
     <string name="artists">Artists</string>
     <string name="settings">"Settings"</string>
-    <string name="shuffle_am">Shuffle all songs</string>
     <string name="search">Search</string>
     <string name="order_by">Order by</string>
     <string name="title">Title</string>
@@ -38,9 +37,15 @@
     <string name="set_as_ringtone_symbol">Set %1$s as your ringtone.</string>
     <string name="delete_song">Delete the song</string>
     <string name="delete_songs">Delete songs</string>
+    <string name="repeat_off">Replay turned off</string>
+    <string name="repeat_all">Repeat all turned on</string>
+    <string name="repeat_song">Repeat the current song</string>
+    <string name="stop_playback_after_curr_song">Stop playback after the current song</string>
     <string name="playing">Playing</string>
     <string name="previous">Previous</string>
     <string name="play_pause">Play / Pause</string>
     <string name="next">Next</string>
+    <string name="shuffle_enabled">Random play is activated</string>
+    <string name="shuffle_disabled">Random play disabled</string>
     <string name="dismiss">Dismiss</string>
 </resources>

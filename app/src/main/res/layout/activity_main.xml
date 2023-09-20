@@ -12,6 +12,7 @@
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
         android:elevation="2dp"
+        app:titleTextAppearance="@style/TextAppearance.Action.TitleMedium"
         android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
         app:navigationIcon="@drawable/ic_close"
         app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light" />

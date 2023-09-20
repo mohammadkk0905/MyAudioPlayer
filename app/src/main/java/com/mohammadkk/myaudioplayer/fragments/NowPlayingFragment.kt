@@ -2,6 +2,7 @@ package com.mohammadkk.myaudioplayer.fragments
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.drawable.AnimatedVectorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.provider.MediaStore
@@ -13,6 +14,7 @@ import android.widget.ImageView
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import com.mohammadkk.myaudioplayer.Constant
 import com.mohammadkk.myaudioplayer.R
 import com.mohammadkk.myaudioplayer.activities.PlayerActivity
@@ -20,6 +22,7 @@ import com.mohammadkk.myaudioplayer.databinding.FragmentNowPlayingBinding
 import com.mohammadkk.myaudioplayer.extensions.applyColor
 import com.mohammadkk.myaudioplayer.extensions.getColorCompat
 import com.mohammadkk.myaudioplayer.extensions.getDrawableCompat
+import com.mohammadkk.myaudioplayer.extensions.getPlayingIcon
 import com.mohammadkk.myaudioplayer.extensions.getTrackArt
 import com.mohammadkk.myaudioplayer.extensions.sendIntent
 import com.mohammadkk.myaudioplayer.models.Song
@@ -35,6 +38,7 @@ class NowPlayingFragment : Fragment(R.layout.fragment_now_playing) {
     private lateinit var binding: FragmentNowPlayingBinding
     private val playbackViewModel: PlaybackViewModel by activityViewModels()
     private var mPlaceholder: Drawable? = null
+    private var isAnimPlay = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -52,6 +56,7 @@ class NowPlayingFragment : Fragment(R.layout.fragment_now_playing) {
             }
         }
         binding.btnPlayPause.setOnClickListener {
+            isAnimPlay = true
             requireContext().sendIntent(Constant.PLAY_PAUSE)
         }
     }
@@ -60,7 +65,7 @@ class NowPlayingFragment : Fragment(R.layout.fragment_now_playing) {
             onSongChanged(it)
         }
         playbackViewModel.isPlaying.observe(requireActivity()) {
-            onSongStateChanged(it)
+            setPlayPause(it)
         }
         playbackViewModel.isPermission.observe(requireActivity()) {
             if (!it) onNoStoragePermission()
@@ -109,6 +114,7 @@ class NowPlayingFragment : Fragment(R.layout.fragment_now_playing) {
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
         if (MusicService.isMusicPlayer()) {
+            isAnimPlay = false
             context?.sendIntent(Constant.BROADCAST_STATUS)
         }
     }
@@ -131,11 +137,23 @@ class NowPlayingFragment : Fragment(R.layout.fragment_now_playing) {
             initSongInfo(song)
         }
     }
-    private fun onSongStateChanged(isPlaying: Boolean) {
-        if (isPlaying) {
-            binding.btnPlayPause.setImageResource(R.drawable.ic_pause)
+    private fun setPlayPause(playing: Boolean) {
+        val icon = playing.getPlayingIcon(false)
+        if (!isAnimPlay) {
+            binding.btnPlayPause.setImageResource(icon)
+            isAnimPlay = true
         } else {
-            binding.btnPlayPause.setImageResource(R.drawable.ic_play)
+            binding.btnPlayPause.setImageResource(playing.getPlayingIcon(true))
+            val drawable = binding.btnPlayPause.drawable
+            if (drawable != null) {
+                when (drawable) {
+                    is AnimatedVectorDrawable -> drawable.start()
+                    is AnimatedVectorDrawableCompat -> drawable.start()
+                    else -> binding.btnPlayPause.setImageResource(icon)
+                }
+            } else {
+                binding.btnPlayPause.setImageResource(icon)
+            }
         }
     }
 }

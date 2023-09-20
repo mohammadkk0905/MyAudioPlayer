@@ -29,7 +29,7 @@
         android:includeFontPadding="false"
         android:maxLines="1"
         android:paddingTop="@dimen/spacing_tiny"
-        android:paddingBottom="@dimen/spacing_small"
+        android:paddingBottom="6dp"
         android:textColor="@color/color_selector_tabs_music"
         android:textSize="@dimen/small_text_size"
         tools:text="@string/albums" />

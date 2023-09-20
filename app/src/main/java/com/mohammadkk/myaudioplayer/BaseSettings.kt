@@ -6,6 +6,7 @@ import androidx.preference.PreferenceManager
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.mohammadkk.myaudioplayer.models.Song
+import com.mohammadkk.myaudioplayer.utils.PlaybackRepeat
 
 class BaseSettings(context: Context) {
     private val prefs = PreferenceManager.getDefaultSharedPreferences(context)
@@ -35,6 +36,17 @@ class BaseSettings(context: Context) {
     var autoplay: Boolean
         get() = prefs.getBoolean("autoplay", true)
         set(value) = prefs.edit { putBoolean("autoplay", value) }
+
+    var playbackRepeat: PlaybackRepeat
+        get() {
+            val index = prefs.getInt("playback_repeat", PlaybackRepeat.REPEAT_OFF.ordinal)
+            return PlaybackRepeat.values().getOrNull(index) ?: PlaybackRepeat.REPEAT_OFF
+        }
+        set(value) = prefs.edit { putInt("playback_repeat", value.ordinal) }
+
+    var isShuffleEnabled: Boolean
+        get() = prefs.getBoolean("shuffle", false)
+        set(value) = prefs.edit {putBoolean("shuffle", value) }
 
     fun getLastPlaying(): Pair<Song, Int>? {
         val json = prefs.getString("last_playing", null) ?: return null

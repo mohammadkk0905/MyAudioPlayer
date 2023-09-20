@@ -59,12 +59,16 @@ class SongsFragment : Fragment(), FragmentLibraries {
         binding.fabShuffle.setOnClickListener {
             songsAdapter?.let { adapter ->
                 if (adapter.itemCount > 0) {
+                    settings.isShuffleEnabled = true
                     adapter.startPlayer(nextInt(adapter.itemCount))
                 } else {
+                    settings.isShuffleEnabled = false
                     binding.fabShuffle.hide()
                 }
+                initializeBtnShuffle()
             }
         }
+        initializeBtnShuffle()
     }
     private fun initializeList() {
         val dataSet = if (songsAdapter != null) songsAdapter!!.dataSet else mutableListOf()
@@ -78,6 +82,12 @@ class SongsFragment : Fragment(), FragmentLibraries {
         binding.songsListView.layoutManager = GridLayoutManager(requireContext(), spanCount)
         binding.songsListView.adapter = songsAdapter
         FastScrollerBuilder(binding.songsListView).useMd2Style().setPadding(0, 0, 0, 0).build()
+    }
+    private fun initializeBtnShuffle() {
+        val isShuffle = settings.isShuffleEnabled
+        binding.fabShuffle.contentDescription = getString(
+            if (isShuffle) R.string.shuffle_enabled else R.string.shuffle_disabled
+        )
     }
     override fun onCreateSortMenu(sortMenu: SubMenu) {
         val sortOrder = settings.songsSorting

@@ -2,6 +2,7 @@ package com.mohammadkk.myaudioplayer.extensions
 
 import android.annotation.SuppressLint
 import android.app.Service
+import android.content.res.ColorStateList
 import android.graphics.BlendMode
 import android.graphics.BlendModeColorFilter
 import android.graphics.PorterDuff
@@ -10,11 +11,14 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.MenuItem
+import android.widget.ImageView
 import androidx.annotation.ColorInt
 import androidx.core.app.ServiceCompat
+import androidx.core.widget.ImageViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.mohammadkk.myaudioplayer.Constant
+import com.mohammadkk.myaudioplayer.R
 
 fun ViewPager2.reduceDragSensitivity() {
     try {
@@ -29,6 +33,9 @@ fun ViewPager2.reduceDragSensitivity() {
         Log.e("MainActivity", e.stackTraceToString())
     }
 }
+fun ImageView.updateIconTint(@ColorInt color: Int) {
+    ImageViewCompat.setImageTintList(this, ColorStateList.valueOf(color))
+}
 @SuppressLint("NotifyDataSetChanged")
 fun <VH : RecyclerView.ViewHolder> RecyclerView.Adapter<VH>.notifyOnDataChanged() {
     notifyDataSetChanged()
@@ -42,6 +49,13 @@ fun Drawable.applyColor(@ColorInt color: Int): Drawable {
         copy.setColorFilter(color, PorterDuff.Mode.SRC_IN)
     }
     return copy
+}
+fun Boolean.getPlayingIcon(anim: Boolean): Int {
+    return if (!anim) {
+        if (this) R.drawable.ic_pause else R.drawable.ic_play
+    } else {
+        if (this) R.drawable.ic_play_to_pause else R.drawable.ic_pause_to_play
+    }
 }
 fun MenuItem.setTitleColor(color: Int) {
     if (title.isNullOrEmpty()) return

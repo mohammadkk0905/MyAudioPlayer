@@ -14,12 +14,7 @@
         <item name="android:letterSpacing">0.025</item>
     </style>
 
-    <style name="TextAppearance.Action.TitleSmall" parent="TextAppearance.Material3.TitleSmall">
-        <item name="fontFamily">@font/vazir_regular</item>
-        <item name="android:fontFamily">@font/vazir_regular</item>
-    </style>
-
-    <style name="TextAppearance.Action.Subtitle1" parent="TextAppearance.MaterialComponents.Subtitle1">
+    <style name="TextAppearance.Action.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
         <item name="fontFamily">@font/vazir_regular</item>
         <item name="android:fontFamily">@font/vazir_regular</item>
     </style>
@@ -46,8 +41,7 @@
     <style name="Widget.Audio.Toolbar" parent="Widget.MaterialComponents.Toolbar">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="titleTextAppearance">@style/TextAppearance.Action.TitleSmall</item>
-        <item name="subtitleTextAppearance">@style/TextAppearance.Action.Subtitle1</item>
+        <item name="titleTextAppearance">@style/TextAppearance.Action.TitleMedium</item>
         <item name="android:background">@color/main_bg</item>
         <item name="android:elevation">@dimen/spacing_tiny</item>
     </style>
@@ -86,11 +80,6 @@
         <item name="maxImageSize">32dp</item>
         <item name="android:elevation">0dp</item>
         <item name="elevation">0dp</item>
-    </style>
-
-    <style name="PopupMenu" parent="ThemeOverlay.MaterialComponents">
-        <item name="android:popupBackground">@drawable/bg_popupmenu</item>
-        <item name="android:popupElevation">2dp</item>
     </style>
 
     <style name="BtnOverflowStyle">

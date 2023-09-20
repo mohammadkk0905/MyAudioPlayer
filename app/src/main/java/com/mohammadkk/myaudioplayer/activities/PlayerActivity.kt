@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.Canvas
 import android.graphics.ColorFilter
 import android.graphics.PixelFormat
+import android.graphics.drawable.AnimatedVectorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.text.TextUtils
@@ -11,8 +12,10 @@ import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+import com.mohammadkk.myaudioplayer.BaseSettings
 import com.mohammadkk.myaudioplayer.Constant
 import com.mohammadkk.myaudioplayer.R
 import com.mohammadkk.myaudioplayer.databinding.ActivityPlayerBinding
@@ -20,12 +23,16 @@ import com.mohammadkk.myaudioplayer.extensions.applyColor
 import com.mohammadkk.myaudioplayer.extensions.errorToast
 import com.mohammadkk.myaudioplayer.extensions.getColorCompat
 import com.mohammadkk.myaudioplayer.extensions.getDrawableCompat
+import com.mohammadkk.myaudioplayer.extensions.getPlayingIcon
+import com.mohammadkk.myaudioplayer.extensions.getPrimaryColor
 import com.mohammadkk.myaudioplayer.extensions.getTrackArt
 import com.mohammadkk.myaudioplayer.extensions.sendIntent
 import com.mohammadkk.myaudioplayer.extensions.toast
+import com.mohammadkk.myaudioplayer.extensions.updateIconTint
 import com.mohammadkk.myaudioplayer.models.Song
 import com.mohammadkk.myaudioplayer.services.MusicService
 import com.mohammadkk.myaudioplayer.ui.MusicSeekBar
+import com.mohammadkk.myaudioplayer.utils.PlaybackRepeat
 import com.mohammadkk.myaudioplayer.viewmodels.PlaybackViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,6 +42,8 @@ import java.util.Locale
 
 class PlayerActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPlayerBinding
+    private var isAnimPlay = true
+    private val baseSettings get() = BaseSettings.getInstance()
     private val playbackViewModel: PlaybackViewModel by viewModels()
     private var isRtlLocal = false
     private var mPlaceholder: Drawable? = null
@@ -65,12 +74,13 @@ class PlayerActivity : AppCompatActivity() {
                 action = Constant.INIT
                 try {
                     startService(this)
-                    binding.playbackPlayPause.setImageResource(R.drawable.ic_pause)
+                    setPlayPause(isAnim = false, playing = true)
                 } catch (e: Exception) {
                     errorToast(e)
                 }
             }
         } else {
+            isAnimPlay = false
             sendIntent(Constant.BROADCAST_STATUS)
         }
     }
@@ -83,9 +93,7 @@ class PlayerActivity : AppCompatActivity() {
             }
         }
         playbackViewModel.isPlaying.observe(this) {
-            binding.playbackPlayPause.setImageResource(
-                if (it) R.drawable.ic_pause else R.drawable.ic_play
-            )
+            setPlayPause(true, it)
         }
         playbackViewModel.isPermission.observe(this) {
             if (!it) {
@@ -111,7 +119,7 @@ class PlayerActivity : AppCompatActivity() {
         binding.playbackSong.text = song.title
         binding.playbackAlbum.text = song.album
         binding.playbackArtist.text = song.artist
-        supportActionBar?.subtitle = String.format(
+        binding.playbackCount.text = String.format(
             Locale.getDefault(), "%d / %d",
             MusicService.mCurrIndex.plus(1),
             MusicService.mSongs.size
@@ -168,6 +176,7 @@ class PlayerActivity : AppCompatActivity() {
     private fun initializeSlider() {
         binding.playbackSeekBar.setOnCallback(object : MusicSeekBar.Callback {
             override fun onSeekTo(position: Int) {
+                isAnimPlay = false
                 Intent(this@PlayerActivity, MusicService::class.java).apply {
                     putExtra(Constant.PROGRESS, position)
                     action = Constant.SET_PROGRESS
@@ -181,37 +190,80 @@ class PlayerActivity : AppCompatActivity() {
     private fun initializeButtons() {
         binding.playbackSkipPrev.rotation = if (isRtlLocal) 180f else 0f
         binding.playbackSkipNext.rotation = if (isRtlLocal) 180f else 0f
-        binding.playbackShuffle.setOnClickListener {  }
+        binding.playbackShuffle.setOnClickListener { toggleShuffle() }
         binding.playbackSkipPrev.setOnClickListener {
+            if (MusicService.isPlaying()) isAnimPlay = false
             if (binding.playbackSeekBar.positionMills >= 5) {
-                onPrevSong()
-            } else {
                 binding.playbackSeekBar.positionMills = 0
-                onPrevSong()
             }
+            if (isRtlLocal) {
+                sendIntent(Constant.NEXT)
+            } else sendIntent(Constant.PREVIOUS)
         }
         binding.playbackPlayPause.setOnClickListener {
             sendIntent(Constant.PLAY_PAUSE)
         }
         binding.playbackSkipNext.setOnClickListener {
+            if (MusicService.isPlaying()) isAnimPlay = false
             if (binding.playbackSeekBar.positionMills >= 5) {
-                onNextSong()
-            } else {
                 binding.playbackSeekBar.positionMills = 0
-                onNextSong()
+            }
+            if (isRtlLocal) {
+                sendIntent(Constant.PREVIOUS)
+            } else sendIntent(Constant.NEXT)
+        }
+        binding.playbackRepeat.setOnClickListener { togglePlaybackRepeat() }
+        initializeBtnShuffle()
+        initializeBtnRepeat()
+    }
+    private fun toggleShuffle() {
+        val isShuffleEnabled = !baseSettings.isShuffleEnabled
+        baseSettings.isShuffleEnabled = isShuffleEnabled
+        toast(if (isShuffleEnabled) R.string.shuffle_enabled else R.string.shuffle_disabled)
+        initializeBtnShuffle()
+    }
+    private fun initializeBtnShuffle() {
+        val isShuffle = baseSettings.isShuffleEnabled
+        binding.playbackShuffle.apply {
+            alpha = if (isShuffle) 1f else 0.9f
+            updateIconTint(if (isShuffle) getPrimaryColor() else getColorCompat(R.color.grey_800))
+            contentDescription = getString(if (isShuffle) R.string.shuffle_enabled else R.string.shuffle_disabled)
+        }
+    }
+    private fun togglePlaybackRepeat() {
+        val newPlaybackRepeat = baseSettings.playbackRepeat.nextPlayBackRepeat
+        baseSettings.playbackRepeat = newPlaybackRepeat
+        toast(newPlaybackRepeat.descriptionRes)
+        initializeBtnRepeat()
+    }
+    private fun initializeBtnRepeat() {
+        val playbackRepeat = baseSettings.playbackRepeat
+        binding.playbackRepeat.apply {
+            contentDescription = getString(playbackRepeat.nextPlayBackRepeat.descriptionRes)
+            setImageResource(playbackRepeat.iconRes)
+            val isRepeatOff = playbackRepeat == PlaybackRepeat.REPEAT_OFF
+            alpha = if (isRepeatOff) 0.9f else 1f
+            updateIconTint(if (isRepeatOff) getColorCompat(R.color.grey_800) else getPrimaryColor())
+        }
+    }
+    private fun setPlayPause(isAnim: Boolean, playing: Boolean) {
+        val icon = playing.getPlayingIcon(false)
+        if (!isAnim || !isAnimPlay) {
+            binding.playbackPlayPause.setImageResource(icon)
+            isAnimPlay = true
+        } else {
+            binding.playbackPlayPause.setImageResource(playing.getPlayingIcon(true))
+            val drawable = binding.playbackPlayPause.drawable
+            if (drawable != null) {
+                when (drawable) {
+                    is AnimatedVectorDrawable -> drawable.start()
+                    is AnimatedVectorDrawableCompat -> drawable.start()
+                    else -> binding.playbackPlayPause.setImageResource(icon)
+                }
+            } else {
+                binding.playbackPlayPause.setImageResource(icon)
             }
         }
-        binding.playbackRepeat.setOnClickListener {  }
-    }
-    private fun onPrevSong() {
-        if (isRtlLocal) {
-            sendIntent(Constant.NEXT)
-        } else sendIntent(Constant.PREVIOUS)
-    }
-    private fun onNextSong() {
-        if (isRtlLocal) {
-            sendIntent(Constant.PREVIOUS)
-        } else sendIntent(Constant.NEXT)
     }
     private fun isFadeAnim(): Boolean {
         return intent?.getBooleanExtra("fade_anim", false) ?: false

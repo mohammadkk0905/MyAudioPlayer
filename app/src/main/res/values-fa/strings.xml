@@ -14,7 +14,6 @@
     </plurals>
     <string name="artists">هنرمندان</string>
     <string name="settings">"تنظیمات"</string>
-    <string name="shuffle_am">پخش اتفاقی همه آهنگ‌ها</string>
     <string name="search">جستجو کردن</string>
     <string name="order_by">مرتب سازی بر اساس</string>
     <string name="title">عنوان</string>
@@ -38,9 +37,15 @@
     <string name="set_as_ringtone_symbol">%1$s را به عنوان آهنگ زنگ خود تنظیم کن.</string>
     <string name="delete_song">حذف آهنگ</string>
     <string name="delete_songs">حذف آهنگ‌ها</string>
+    <string name="repeat_off">تکرار خاموش شد</string>
+    <string name="repeat_all">تکرار همه روشن شد</string>
+    <string name="repeat_song">تکرار آهنگ فعلی</string>
+    <string name="stop_playback_after_curr_song">توقف پخش پس از آهنگ فعلی</string>
     <string name="playing">در حال پخش</string>
     <string name="previous">قبلی</string>
     <string name="play_pause">پخش / مکث</string>
     <string name="next">بعدی</string>
+    <string name="shuffle_enabled">پخش تصادفی فعال شد</string>
+    <string name="shuffle_disabled">پخش تصادفی غیر فعال شد</string>
     <string name="dismiss">رد</string>
 </resources>
