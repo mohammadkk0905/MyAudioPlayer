@@ -121,7 +121,7 @@ class PlayerActivity : AppCompatActivity() {
         binding.playbackArtist.text = song.artist
         binding.playbackCount.text = String.format(
             Locale.getDefault(), "%d / %d",
-            MusicService.mCurrIndex.plus(1),
+            MusicService.findIndex().plus(1),
             MusicService.mSongs.size
         )
         binding.playbackSeekBar.durationMills = song.duration
@@ -221,6 +221,7 @@ class PlayerActivity : AppCompatActivity() {
         baseSettings.isShuffleEnabled = isShuffleEnabled
         toast(if (isShuffleEnabled) R.string.shuffle_enabled else R.string.shuffle_disabled)
         initializeBtnShuffle()
+        sendIntent(Constant.REFRESH_LIST)
     }
     private fun initializeBtnShuffle() {
         val isShuffle = baseSettings.isShuffleEnabled

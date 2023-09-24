@@ -1,19 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/title"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/white"
-    tools:viewBindingIgnore="true">
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:maxLines="1"
-        android:ellipsize="end"
-        android:textAppearance="@style/TextAppearance.AppCompat.Small"
-        android:paddingVertical="@dimen/spacing_tiny"
-        android:paddingHorizontal="@dimen/spacing_mid_medium"
-        android:textColor="@color/grey_900"
-        android:fontFamily="@font/vazir_regular"/>
-</FrameLayout>
+    android:background="?attr/colorSurface"
+    android:ellipsize="end"
+    android:maxLines="1"
+    android:paddingHorizontal="@dimen/spacing_mid_medium"
+    android:paddingVertical="@dimen/spacing_tiny"
+    android:textAppearance="@style/TextAppearance.Audio.BodySmall"
+    android:textColor="@color/grey_900"
+    tools:viewBindingIgnore="true" />

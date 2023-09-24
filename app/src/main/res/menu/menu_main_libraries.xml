@@ -14,4 +14,8 @@
         app:showAsAction="ifRoom">
         <menu />
     </item>
+    <item
+        android:id="@+id/action_recheck_library"
+        android:title="@string/recheck_library"
+        app:showAsAction="never" />
 </menu>

@@ -10,7 +10,8 @@ data class Song(
     val path: String,
     val year: Int,
     val duration: Int,
-    val dateAdded: Int
+    val dateAdded: Int,
+    val dateModified: Long
 ) {
     companion object {
         val emptySong = Song(
@@ -23,7 +24,8 @@ data class Song(
             path = "",
             year = -1,
             duration = -1,
-            dateAdded = -1
+            dateAdded = -1,
+            dateModified = -1
         )
     }
 }

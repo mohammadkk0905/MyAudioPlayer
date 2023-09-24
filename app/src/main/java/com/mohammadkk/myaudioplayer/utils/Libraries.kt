@@ -1,13 +1,11 @@
 package com.mohammadkk.myaudioplayer.utils
 
 import android.content.Context
+import android.database.Cursor
 import android.provider.MediaStore
 import android.provider.MediaStore.Audio
 import com.mohammadkk.myaudioplayer.BaseSettings
 import com.mohammadkk.myaudioplayer.Constant
-import com.mohammadkk.myaudioplayer.extensions.getIntVal
-import com.mohammadkk.myaudioplayer.extensions.getLongVal
-import com.mohammadkk.myaudioplayer.extensions.getStringVal
 import com.mohammadkk.myaudioplayer.models.Song
 import java.text.Collator
 import kotlin.math.abs
@@ -23,16 +21,17 @@ object Libraries {
             Audio.Media.EXTERNAL_CONTENT_URI
         }
         val projection = arrayOf(
-            Audio.AudioColumns._ID,
-            Audio.AudioColumns.ALBUM_ID,
-            Audio.AudioColumns.ARTIST_ID,
-            Audio.AudioColumns.TITLE,
-            Audio.AudioColumns.ALBUM,
-            Audio.AudioColumns.ARTIST,
-            Audio.AudioColumns.DATA,
-            Audio.AudioColumns.YEAR,
-            Audio.AudioColumns.DURATION,
-            Audio.AudioColumns.DATE_ADDED
+            Audio.AudioColumns._ID,// 0
+            Audio.AudioColumns.ALBUM_ID,// 1
+            Audio.AudioColumns.ARTIST_ID,// 2
+            Audio.AudioColumns.TITLE,// 3
+            Audio.AudioColumns.ALBUM,// 4
+            Audio.AudioColumns.ARTIST,// 5
+            Audio.AudioColumns.DATA,// 6
+            Audio.AudioColumns.YEAR,// 7
+            Audio.AudioColumns.DURATION,// 8
+            Audio.AudioColumns.DATE_ADDED,// 9
+            Audio.AudioColumns.DATE_MODIFIED// 10
         )
         val ms = if (selection != null && selection.trim { it <= ' ' } != "") {
             "$IS_MUSIC AND $selection"
@@ -45,23 +44,27 @@ object Libraries {
             cursor?.use {
                 if (cursor.moveToFirst()) {
                     do {
-                        val id = cursor.getLongVal(Audio.AudioColumns._ID)
-                        val albumId = cursor.getLongVal(Audio.AudioColumns.ALBUM_ID)
-                        val artistId = cursor.getLongVal(Audio.AudioColumns.ARTIST_ID)
-                        val title = cursor.getStringVal(Audio.AudioColumns.TITLE, MediaStore.UNKNOWN_STRING)
-                        val album = cursor.getStringVal(Audio.AudioColumns.ALBUM, MediaStore.UNKNOWN_STRING)
-                        val artist = cursor.getStringVal(Audio.AudioColumns.ARTIST, MediaStore.UNKNOWN_STRING)
-                        val path = cursor.getStringVal(Audio.AudioColumns.DATA)
-                        val year = cursor.getIntVal(Audio.AudioColumns.YEAR)
-                        val duration = cursor.getIntVal(Audio.AudioColumns.DURATION)
-                        val dateAdded = cursor.getIntVal(Audio.AudioColumns.DATE_ADDED)
-                        songs.add(Song(id, albumId, artistId, title, album, artist, path, year, duration, dateAdded))
+                        songs.add(getSongFromCursorImpl(cursor))
                     } while (cursor.moveToNext())
                 }
             }
         } catch (ignored: Exception) {
         }
         return songs
+    }
+    private fun getSongFromCursorImpl(cursor: Cursor): Song {
+        val id = cursor.getLong(0)
+        val albumId = cursor.getLong(1)
+        val artistId = cursor.getLong(2)
+        val title = cursor.getString(3) ?: MediaStore.UNKNOWN_STRING
+        val album = cursor.getString(4) ?: MediaStore.UNKNOWN_STRING
+        val artist = cursor.getString(5) ?: MediaStore.UNKNOWN_STRING
+        val path = cursor.getString(6) ?: ""
+        val year = cursor.getInt(7)
+        val duration = cursor.getInt(8)
+        val dateAdded = cursor.getInt(9)
+        val dateModified = cursor.getLong(10)
+        return Song(id, albumId, artistId, title, album, artist, path, year, duration, dateAdded, dateModified)
     }
     fun getSortedSongs(songs: List<Song>?): List<Song> {
         if (songs.isNullOrEmpty()) return emptyList()

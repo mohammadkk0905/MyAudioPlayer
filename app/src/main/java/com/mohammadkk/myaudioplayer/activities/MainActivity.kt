@@ -1,9 +1,12 @@
 package com.mohammadkk.myaudioplayer.activities
 
+import android.content.ComponentName
 import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.IBinder
 import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
@@ -28,6 +31,7 @@ import com.mohammadkk.myaudioplayer.Constant
 import com.mohammadkk.myaudioplayer.R
 import com.mohammadkk.myaudioplayer.databinding.ActivityMainBinding
 import com.mohammadkk.myaudioplayer.databinding.PlayerControllerBinding
+import com.mohammadkk.myaudioplayer.dialogs.ScanMediaFoldersDialog
 import com.mohammadkk.myaudioplayer.extensions.hasNotificationApi
 import com.mohammadkk.myaudioplayer.extensions.hasPermission
 import com.mohammadkk.myaudioplayer.extensions.reduceDragSensitivity
@@ -37,6 +41,7 @@ import com.mohammadkk.myaudioplayer.fragments.ArtistsFragment
 import com.mohammadkk.myaudioplayer.fragments.SongsFragment
 import com.mohammadkk.myaudioplayer.listeners.AdapterListener
 import com.mohammadkk.myaudioplayer.services.MusicService
+import com.mohammadkk.myaudioplayer.services.ScannerService
 import com.mohammadkk.myaudioplayer.viewmodels.MusicViewModel
 
 class MainActivity : BaseActivity(), AdapterListener {
@@ -44,6 +49,18 @@ class MainActivity : BaseActivity(), AdapterListener {
     private lateinit var binding2: PlayerControllerBinding
     private val musicViewModel: MusicViewModel by viewModels()
     private var mActionMode: ActionMode? = null
+    private var isBoundService = false
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val localService = service as ScannerService.LocalScanner
+            val scannerService = localService.instance
+            scannerService.listener = this@MainActivity
+            isBoundService = true
+        }
+        override fun onServiceDisconnected(name: ComponentName?) {
+            isBoundService = false
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,7 +70,7 @@ class MainActivity : BaseActivity(), AdapterListener {
         setContentView(binding.root)
         setSupportActionBar(binding.mainActionBar)
         setupElementUi()
-        val permission = Constant.storagePermissionApi()
+        val permission = Constant.STORAGE_PERMISSION
         if (hasPermission(permission)) {
             setupRequires()
         } else {
@@ -110,7 +127,7 @@ class MainActivity : BaseActivity(), AdapterListener {
         }
     }
     private fun storagePermissionManager() {
-        val permission = Constant.storagePermissionApi()
+        val permission = Constant.STORAGE_PERMISSION
         if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
             Snackbar.make(binding.root, R.string.permission_storage_denied, Snackbar.LENGTH_SHORT).setAction(R.string.grant) {
                 ActivityCompat.requestPermissions(this, arrayOf(permission), Constant.PERMISSION_REQUEST_STORAGE)
@@ -193,8 +210,13 @@ class MainActivity : BaseActivity(), AdapterListener {
         return super.onCreateOptionsMenu(menu)
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val library = musicViewModel.fragmentLibraries[binding.mainPager.currentItem]
-        library?.onSelectedItemMenu(item)
+        if (item.itemId == R.id.action_recheck_library) {
+            val dialog = ScanMediaFoldersDialog()
+            dialog.show(supportFragmentManager, "SCAN_MEDIA_FOLDER_CHOOSER")
+        } else {
+            val library = musicViewModel.fragmentLibraries[binding.mainPager.currentItem]
+            library?.onSelectedItemMenu(item)
+        }
         return super.onOptionsItemSelected(item)
     }
     override fun onCreateActionMode(callback: ActionMode.Callback): ActionMode? {
@@ -221,8 +243,21 @@ class MainActivity : BaseActivity(), AdapterListener {
         mActionMode?.finish()
         mActionMode = null
     }
+    override fun onDestroyService() {
+        if (isBoundService) {
+            unbindService(connection)
+            isBoundService = false
+        }
+    }
     override fun onReloadLibrary() {
         musicViewModel.updateLibraries()
+    }
+    override fun onBindService() {
+        if (!isBoundService) {
+            Intent(this, ScannerService::class.java).also {
+                bindService(it, connection, BIND_AUTO_CREATE)
+            }
+        }
     }
     private class SlidePagerAdapter(fm: FragmentManager, le: Lifecycle) : FragmentStateAdapter(fm, le) {
         private val fragments = mutableListOf<Fragment>()

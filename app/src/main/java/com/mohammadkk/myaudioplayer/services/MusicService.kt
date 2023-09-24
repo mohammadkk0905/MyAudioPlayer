@@ -31,6 +31,7 @@ import com.mohammadkk.myaudioplayer.models.Song
 import com.mohammadkk.myaudioplayer.utils.Libraries
 import com.mohammadkk.myaudioplayer.utils.MusicPlayer
 import com.mohammadkk.myaudioplayer.utils.NotificationUtils
+import com.mohammadkk.myaudioplayer.utils.PlaybackRepeat
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.Executors
@@ -98,9 +99,8 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
         initMediaPlayerIfNeeded()
         onCreateMediaSession()
         notificationUtils = NotificationUtils.createInstance(this, mMediaSession!!)
-        if (!Constant.isQPlus() && !hasPermission(Constant.storagePermissionApi())) {
+        if (!Constant.isQPlus() && !hasPermission(Constant.STORAGE_PERMISSION)) {
             playbackStateManager.noStoragePermission()
-
         }
         startForegroundWithNotify()
     }
@@ -118,7 +118,7 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
         isForeground = false
     }
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (!Constant.isQPlus() && !hasPermission(Constant.storagePermissionApi())) {
+        if (!Constant.isQPlus() && !hasPermission(Constant.STORAGE_PERMISSION)) {
             return START_NOT_STICKY
         }
 
@@ -136,6 +136,7 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
             Constant.SET_PROGRESS -> onHandleSetProgress(intent)
             Constant.SKIP_BACKWARD -> onSkip(false)
             Constant.SKIP_FORWARD -> onSkip(true)
+            Constant.REFRESH_LIST -> onHandleRefreshList()
             Constant.BROADCAST_STATUS -> {
                 broadcastSongStateChange(isPlaying())
                 broadcastSongChange()
@@ -149,25 +150,21 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
         return START_NOT_STICKY
     }
     private fun initializeService(intent: Intent?) {
-        if (mSongs.isEmpty()) {
-            mSongs = Libraries.fetchAllSongs(
-                context = baseContext ?: applicationContext,
-                selection = null, selectionArgs = null
-            )
-        }
+        loadingItems()
         var wantedId = intent?.getLongExtra(Constant.SONG_ID, -1L) ?: -1L
         if (wantedId == -1L) {
-            val lastQueueItem = settings.getLastPlaying()
+            val lastQueueItem = settings.lastPlaying
             wantedId = lastQueueItem?.first?.id ?: -1L
             setProgressOnPrepare = lastQueueItem?.second ?: 0
         }
-        for (i in mSongs.indices) {
+        for (i in 0 until mSongs.size) {
             val track = mSongs[i]
             if (track.id == wantedId) {
                 mCurrSong = track
                 break
             }
         }
+        checkSongShuffle()
         initMediaPlayerIfNeeded()
         startForegroundWithNotify()
         isServiceInit = true
@@ -187,14 +184,16 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
             return
         }
         initMediaPlayerIfNeeded()
-        if (mPlayer!!.position() < 4500) {
-            restartSong()
+        val currentIndex = mSongs.indexOfFirst { it.id == mCurrSong?.id }
+        mCurrSong = if (currentIndex == -1) {
+            mSongs.last()
         } else {
-            mCurrIndex -= 1
-            if (mCurrIndex < 0) mCurrIndex = mSongs.lastIndex
-            mCurrSong = mSongs[mCurrIndex]
-            setSong(mCurrSong!!.id)
+            var currIndex = currentIndex
+            currIndex -= 1
+            if (currIndex < 0) currIndex = mSongs.lastIndex
+            mSongs[currIndex]
         }
+        setSong(mCurrSong!!.id)
     }
     private fun onHandlePlayPause() {
         playOnPrepare = true
@@ -241,28 +240,24 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
             stopSelf()
         }
     }
-    private fun restartSong() {
-        if (mCurrSong != null)
-            setSong(mCurrSong!!.id)
-    }
     private fun getNextQueueId(isChange: Boolean): Long {
         return when (mSongs.size) {
             0 -> -1L
             1 -> {
-                if (isChange) {
-                    mCurrIndex = 0
-                    mCurrSong = mSongs.first()
-                }
+                if (isChange) mCurrSong = mSongs.first()
                 mSongs.first().id
             }
             else -> {
-                val currIndex = (mCurrIndex + 1) % mSongs.size
-                val currSong = mSongs[mCurrIndex]
-                if (isChange) {
-                    mCurrIndex = currIndex
-                    mCurrSong = currSong
+                val currentIndex = mSongs.indexOfFirst { it.id == mCurrSong?.id }
+                if (currentIndex != -1) {
+                    val nextSong = mSongs[(currentIndex + 1) % mSongs.size]
+                    if (isChange) mCurrSong = nextSong
+                    nextSong.id
+                } else {
+                    val nextSong = settings.lastPlaying?.first
+                    if (isChange) mCurrSong = nextSong
+                    nextSong?.id ?: -1L
                 }
-                currSong.id
             }
         }
     }
@@ -347,6 +342,41 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
         mPlayer!!.seekTo(newProgress)
         onResumeSong()
     }
+    private fun onHandleRefreshList() {
+        Constant.ensureBackgroundThread {
+            loadingItems()
+            checkSongShuffle()
+        }
+    }
+    private fun loadingItems() {
+        val lastState = settings.lastStateMode
+        when (lastState.mode) {
+            "ALBUM" -> {
+                mSongs = Libraries.getSortedSongs(
+                    Libraries.fetchSongsByAlbumId(baseContext, lastState.id)
+                ).toMutableList()
+            }
+            "ARTIST" -> {
+                mSongs = Libraries.getSortedSongs(
+                    Libraries.fetchSongsByArtistId(baseContext, lastState.id)
+                ).toMutableList()
+            }
+            else -> {
+                mSongs = Libraries.getSortedSongs(
+                    Libraries.fetchAllSongs(baseContext, null, null)
+                ).toMutableList()
+            }
+        }
+    }
+    private fun checkSongShuffle() {
+        if (settings.isShuffleEnabled) {
+            mSongs.shuffle()
+            if (mCurrSong != null) {
+                mSongs.remove(mCurrSong)
+                mSongs.add(0, mCurrSong!!)
+            }
+        }
+    }
     private fun updateProgress(progress: Int) {
         mPlayer!!.seekTo(progress)
         saveSongProgress()
@@ -404,10 +434,8 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
         playbackStateManager.songStateChanged(playing)
     }
     private fun updateMediaSession() {
-        val songCover = getSongCoverImage()
-        mCurrSongCover = songCover.first
-        var imageScreen = if (songCover.second) songCover.first else null
-        if (imageScreen == null || imageScreen.isRecycled) imageScreen = mPlaceholder
+        val imageScreen = getSongCoverImage() ?: mPlaceholder
+        mCurrSongCover = imageScreen
 
         val metadata = MediaMetadataCompat.Builder()
             .putBitmap(MediaMetadataCompat.METADATA_KEY_ART, imageScreen)
@@ -416,7 +444,7 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
             .putString(MediaMetadataCompat.METADATA_KEY_TITLE, mCurrSong?.title ?: "")
             .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, mCurrSong?.id?.toString())
             .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, (mCurrSong?.duration ?: 0).toLong())
-            .putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, (mCurrIndex + 1).toLong())
+            .putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, mSongs.indexOf(mCurrSong).toLong() + 1)
             .putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, mSongs.size.toLong())
             .build()
 
@@ -443,27 +471,26 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
         } catch (ignored: Exception) {
         }
     }
-    private fun getSongCoverImage(): Pair<Bitmap, Boolean> {
+    private fun getSongCoverImage(): Bitmap? {
         if (mPlaceholder == null) {
             mPlaceholder = BitmapFactory.decodeResource(resources, R.drawable.ic_music_large)
         }
         if (File(mCurrSong?.path ?: "").exists()) {
             val rawArt = mCurrSong?.getTrackArt(baseContext ?: applicationContext)
-            if (rawArt != null) return Pair(rawArt, true)
+            if (rawArt != null) return rawArt
         }
         val albumArt = mCurrSong?.getAlbumArt(baseContext ?: applicationContext)
-        if (albumArt != null) return Pair(albumArt, true)
+        if (albumArt != null) return albumArt
         if (Constant.isQPlus()) {
             if (mCurrSong?.path?.startsWith("content://") == true) {
                 try {
                     val size = Size(512, 512)
-                    val thumbnail = contentResolver.loadThumbnail(mCurrSong!!.path.toUri(), size, null)
-                    return Pair(thumbnail, true)
+                    return contentResolver.loadThumbnail(mCurrSong!!.path.toUri(), size, null)
                 } catch (ignored: Exception) {
                 }
             }
         }
-        return Pair(mPlaceholder!!, false)
+        return null
     }
     private fun destroyPlayer() {
         saveSongProgress()
@@ -496,28 +523,26 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
         if (mCurrSongCover?.isRecycled == true) {
             mCurrSongCover = BitmapFactory.decodeResource(resources, R.drawable.ic_music_large)
         }
-        if (notificationUtils != null && (mCurrSong?.id ?: -1L) != -1L) {
-            notificationUtils!!.createMusicNotification(
-                song = mCurrSong,
-                playing = isPlaying(),
-                largeIcon = mCurrSongCover
-            ) {
-                if (!isForeground) {
-                    try {
-                        if (Constant.isQPlus()) {
-                            startForeground(
-                                NotificationUtils.NOTIFICATION_ID, it,
-                                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-                            )
-                        } else {
-                            startForeground(NotificationUtils.NOTIFICATION_ID, it)
-                        }
-                        isForeground = true
-                    } catch (ignored: IllegalStateException) {
+        notificationUtils?.createMusicNotification(
+            song = mCurrSong,
+            playing = isPlaying(),
+            largeIcon = mCurrSongCover
+        ) {
+            if (!isForeground) {
+                try {
+                    if (Constant.isQPlus()) {
+                        startForeground(
+                            NotificationUtils.NOTIFICATION_ID, it,
+                            ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                        )
+                    } else {
+                        startForeground(NotificationUtils.NOTIFICATION_ID, it)
                     }
-                } else {
-                    notificationUtils!!.notify(NotificationUtils.NOTIFICATION_ID, it)
+                    isForeground = true
+                } catch (ignored: IllegalStateException) {
                 }
+            } else {
+                notificationUtils!!.notify(NotificationUtils.NOTIFICATION_ID, it)
             }
         }
     }
@@ -559,12 +584,32 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
     }
     override fun onTrackEnded() {
         if (!settings.autoplay) return
-        playOnPrepare = !isEndedPlaylist()
-        if (isEndedPlaylist()) {
-            broadcastSongProgress(0)
-            setupNextSong()
-        } else {
-            setupNextSong()
+        val playbackRepeat = settings.playbackRepeat
+
+        playOnPrepare = when (playbackRepeat) {
+            PlaybackRepeat.REPEAT_OFF -> !isEndedPlaylist()
+            PlaybackRepeat.REPEAT_PLAYLIST, PlaybackRepeat.REPEAT_SONG -> true
+            PlaybackRepeat.STOP_AFTER_CURRENT_SONG -> false
+        }
+
+        when (playbackRepeat) {
+            PlaybackRepeat.REPEAT_OFF -> {
+                if (isEndedPlaylist()) {
+                    broadcastSongProgress(0)
+                    setupNextSong()
+                } else {
+                    setupNextSong()
+                }
+            }
+            PlaybackRepeat.REPEAT_PLAYLIST -> setupNextSong()
+            PlaybackRepeat.REPEAT_SONG -> {
+                if (mCurrSong != null)
+                    setSong(mCurrSong!!.id)
+            }
+            PlaybackRepeat.STOP_AFTER_CURRENT_SONG -> {
+                broadcastSongProgress(0)
+                if (mCurrSong != null) setSong(mCurrSong!!.id)
+            }
         }
     }
     override fun onTrackWentToNext() {
@@ -592,8 +637,8 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
     private fun saveSongProgress() {
         val currPosition = mPlayer?.position() ?: 0
         if (mCurrSong != null && currPosition != 0) {
-            settings.putLastPlaying(
-                Pair(mCurrSong, mPlayer!!.position())
+            settings.lastPlaying = Pair(
+                mCurrSong!!, currPosition
             )
         }
     }
@@ -609,10 +654,10 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
         private var mNextSong: Song? = null
         var mPlayer: MusicPlayer? = null
         var mCurrSong: Song? = null
-        var mSongs = listOf<Song>()
-        var mCurrIndex = 0
+        var mSongs = mutableListOf<Song>()
 
         fun isMusicPlayer() = mPlayer != null
         fun isPlaying() = mPlayer != null && mPlayer!!.isPlaying()
+        fun findIndex() = if (mCurrSong == null) -1 else mSongs.indexOf(mCurrSong)
     }
 }

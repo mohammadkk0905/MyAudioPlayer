@@ -18,8 +18,10 @@ import com.mohammadkk.myaudioplayer.R
 import com.mohammadkk.myaudioplayer.adapters.SongsAdapter
 import com.mohammadkk.myaudioplayer.databinding.FragmentSongsBinding
 import com.mohammadkk.myaudioplayer.extensions.isLandscape
+import com.mohammadkk.myaudioplayer.extensions.sendIntent
 import com.mohammadkk.myaudioplayer.listeners.FragmentLibraries
 import com.mohammadkk.myaudioplayer.models.Song
+import com.mohammadkk.myaudioplayer.services.MusicService
 import com.mohammadkk.myaudioplayer.viewmodels.MusicViewModel
 import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import kotlin.math.abs
@@ -72,7 +74,7 @@ class SongsFragment : Fragment(), FragmentLibraries {
     }
     private fun initializeList() {
         val dataSet = if (songsAdapter != null) songsAdapter!!.dataSet else mutableListOf()
-        songsAdapter = SongsAdapter(requireActivity(), dataSet, false)
+        songsAdapter = SongsAdapter(requireActivity(), dataSet, "MAIN")
         val spanCount = if (requireContext().isLandscape) {
             resources.getInteger(R.integer.def_list_columns_land)
         } else {
@@ -148,6 +150,9 @@ class SongsFragment : Fragment(), FragmentLibraries {
             item.isChecked = true
             settings.songsSorting = sortName
             musicViewModel.forceReload(0)
+            if (MusicService.isMusicPlayer()) {
+                requireContext().sendIntent(Constant.REFRESH_LIST)
+            }
         }
     }
     override fun onFindItems(query: String?) {

@@ -1,46 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".activities.TracksActivity">
-
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/mainActionBar"
-        android:layout_width="0dp"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        android:elevation="2dp"
-        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:navigationIcon="@drawable/ic_west"
-        app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"
-        app:titleTextAppearance="@style/TextAppearance.Action.TitleMedium" />
-
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/tracksRefresh"
-        android:layout_width="0dp"
+    <RelativeLayout
+        android:id="@+id/mainLayout"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/navFragPlayer"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/mainActionBar">
+        android:layout_weight="1">
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/mainActionBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            android:elevation="2dp"
+            android:layout_alignParentTop="true"
+            android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+            app:navigationIcon="@drawable/ic_west"
+            app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"
+            app:titleTextAppearance="@style/TextAppearance.Action.TitleMedium" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/tracksRv"
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/tracksRefresh"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:paddingStart="0dp"
-            android:paddingTop="0dp"
-            android:paddingEnd="@dimen/spacing_small"
-            android:paddingBottom="@dimen/spacing_small"
-            tools:itemCount="8"
-            tools:listitem="@layout/item_songs" />
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+            android:layout_below="@+id/mainActionBar"
+            android:layout_alignParentBottom="true">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/tracksRv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingStart="0dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="@dimen/spacing_small"
+                android:paddingBottom="@dimen/spacing_small"
+                tools:itemCount="8"
+                tools:listitem="@layout/item_songs" />
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </RelativeLayout>
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/navFragPlayer"
@@ -49,6 +51,5 @@
         android:layout_height="?attr/actionBarSize"
         android:background="@color/grey_50"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
         tools:layout="@layout/fragment_now_playing" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

@@ -10,6 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.mohammadkk.myaudioplayer.Constant
 import com.mohammadkk.myaudioplayer.R
+import com.mohammadkk.myaudioplayer.dialogs.DeleteSongsDialog
 import com.mohammadkk.myaudioplayer.extensions.errorToast
 import com.mohammadkk.myaudioplayer.extensions.toContentUri
 import com.mohammadkk.myaudioplayer.extensions.toast
@@ -48,6 +49,7 @@ abstract class BaseActivity : AppCompatActivity() {
                     if (success) {
                         callback()
                     } else {
+                        DeleteSongsDialog.destroyDataset()
                         toast(R.string.unknown_error_occurred)
                     }
                 }
@@ -66,7 +68,7 @@ abstract class BaseActivity : AppCompatActivity() {
             }
         }
     }
-    open fun onReloadLibrary() {
+    open fun onBindService() {
     }
     companion object {
         private var mAfterSdk30Action: ((success: Boolean) -> Unit)? = null

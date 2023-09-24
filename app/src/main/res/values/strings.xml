@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="main_pages">Main pages</string>
+    <string name="error_label">Error</string>
     <string name="permission_storage_denied">Permission to access storage denied.</string>
     <string name="grant">Grant</string>
     <string name="yes">Yes</string>
@@ -25,6 +26,7 @@
     <string name="year">Year</string>
     <string name="ascending">Ascending</string>
     <string name="descending">Descending</string>
+    <string name="recheck_library">Recheck the library</string>
     <string name="share">Share</string>
     <string name="remove_from_device">Remove from device</string>
     <string name="unknown_error_occurred">An unknown error occurred</string>
@@ -48,4 +50,8 @@
     <string name="shuffle_enabled">Random play is activated</string>
     <string name="shuffle_disabled">Random play disabled</string>
     <string name="dismiss">Dismiss</string>
+    <string name="scanning">Scanning…</string>
+    <string name="scann_message">%1d files were scanned.</string>
+    <string name="directory_scan">Directory scan</string>
+    <string name="nothing_to_scan">Nothing to scan.</string>
 </resources>

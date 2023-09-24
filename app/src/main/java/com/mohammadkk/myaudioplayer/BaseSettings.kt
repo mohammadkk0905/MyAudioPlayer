@@ -4,14 +4,18 @@ import android.content.Context
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
 import com.mohammadkk.myaudioplayer.models.Song
+import com.mohammadkk.myaudioplayer.models.StateMode
 import com.mohammadkk.myaudioplayer.utils.PlaybackRepeat
+import java.lang.reflect.Type
 
 class BaseSettings(context: Context) {
     private val prefs = PreferenceManager.getDefaultSharedPreferences(context)
     private val gson = GsonBuilder().create()
     private val songType = object : TypeToken<Pair<Song, Int>>() {}.type
+    private val stateType = object : TypeToken<StateMode>() {}.type
 
     var songsSorting: Int
         get() = prefs.getInt("songs_sorting", Constant.SORT_BY_TITLE)
@@ -48,14 +52,29 @@ class BaseSettings(context: Context) {
         get() = prefs.getBoolean("shuffle", false)
         set(value) = prefs.edit {putBoolean("shuffle", value) }
 
-    fun getLastPlaying(): Pair<Song, Int>? {
-        val json = prefs.getString("last_playing", null) ?: return null
-        return gson.fromJson(json, songType)
+    var lastPlaying:  Pair<Song, Int>?
+        get() = getObject("last_playing", songType)
+        set(value) = putObject("last_playing", value)
+
+    var lastStateMode:  StateMode
+        get() = getObject("last_state_mode", stateType) ?: StateMode("MAIN", -1L)
+        set(value) = putObject("last_state_mode", value)
+
+    private fun <T> getObject(key: String, type: Type): T? {
+        val json = prefs.getString(key, null) ?: return null
+        return try {
+            gson.fromJson(json, type)
+        } catch (e: JsonSyntaxException) {
+            null
+        }
     }
-    fun putLastPlaying(value: Pair<Song?, Int>) {
-        if (value.first == null) return
+    private fun <T> putObject(key: String, value: T?) {
+        if (value == null) {
+            prefs.edit().remove(key).apply()
+            return
+        }
         val json = gson.toJson(value)
-        prefs.edit { putString("last_playing", json) }
+        prefs.edit { putString(key, json) }
     }
     companion object {
         @Volatile

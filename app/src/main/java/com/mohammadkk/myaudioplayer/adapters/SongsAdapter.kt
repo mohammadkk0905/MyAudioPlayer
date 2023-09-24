@@ -6,16 +6,13 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.PopupMenu
-import android.widget.TextView
 import androidx.appcompat.view.ActionMode
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.request.RequestOptions
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.signature.MediaStoreSignature
 import com.google.gson.GsonBuilder
 import com.mohammadkk.myaudioplayer.BaseSettings
 import com.mohammadkk.myaudioplayer.Constant
@@ -23,7 +20,9 @@ import com.mohammadkk.myaudioplayer.R
 import com.mohammadkk.myaudioplayer.activities.BaseActivity
 import com.mohammadkk.myaudioplayer.activities.PlayerActivity
 import com.mohammadkk.myaudioplayer.databinding.ItemSongsBinding
+import com.mohammadkk.myaudioplayer.dialogs.DeleteSongsDialog
 import com.mohammadkk.myaudioplayer.extensions.getColorCompat
+import com.mohammadkk.myaudioplayer.extensions.getDrawableCompat
 import com.mohammadkk.myaudioplayer.extensions.hasNotificationApi
 import com.mohammadkk.myaudioplayer.extensions.notifyOnDataChanged
 import com.mohammadkk.myaudioplayer.extensions.setTitleColor
@@ -34,6 +33,7 @@ import com.mohammadkk.myaudioplayer.extensions.toFormattedDate
 import com.mohammadkk.myaudioplayer.extensions.toFormattedDuration
 import com.mohammadkk.myaudioplayer.listeners.AdapterListener
 import com.mohammadkk.myaudioplayer.models.Song
+import com.mohammadkk.myaudioplayer.models.StateMode
 import com.mohammadkk.myaudioplayer.services.MusicService
 import com.mohammadkk.myaudioplayer.utils.Libraries
 import com.mohammadkk.myaudioplayer.utils.RingtoneManager
@@ -43,7 +43,7 @@ import kotlin.math.abs
 class SongsAdapter(
     private val context: FragmentActivity,
     var dataSet: MutableList<Song>,
-    private var subMode: Boolean
+    private var mode: String
 ) : RecyclerView.Adapter<SongsAdapter.SongHolder>(), PopupTextProvider {
     private val settings = BaseSettings.getInstance()
     private var adapterListener: AdapterListener? = null
@@ -112,15 +112,30 @@ class SongsAdapter(
         this.dataSet = ArrayList(dataSet)
         notifyOnDataChanged()
     }
+    fun swapDeleted() {
+        if (mode != "MAIN") {
+            DeleteSongsDialog.getDataset().forEach { s ->
+                val index = dataSet.indexOf(s)
+                if (index != -1) {
+                    dataSet.removeAt(index)
+                    notifyItemRemoved(index)
+                }
+            }
+            DeleteSongsDialog.destroyDataset()
+        }
+    }
     fun startPlayer(position: Int) {
         val intent = Intent(context, PlayerActivity::class.java)
         val song = dataSet[position]
         intent.putExtra(Constant.SONG, GsonBuilder().create().toJson(song))
         intent.putExtra(Constant.RESTART_PLAYER, true)
-        MusicService.mCurrIndex = position
         MusicService.mCurrSong = song
-        MusicService.mSongs = dataSet
-        if (subMode) {
+        settings.lastStateMode = StateMode(mode, when (mode) {
+            "ALBUM" -> song.albumId
+            "ARTIST" -> song.artistId
+            else -> song.id
+        })
+        if (mode != "MAIN") {
             if (context is BaseActivity) {
                 context.isFadeAnimation = false
             }
@@ -150,6 +165,10 @@ class SongsAdapter(
                 return true
             }
             R.id.action_ringtone -> {
+                if (isActionMode) {
+                    actionMode?.finish()
+                    actionMode = null
+                }
                 if (RingtoneManager.requiresDialog(context)) {
                     RingtoneManager.showDialog(context)
                 } else {
@@ -165,6 +184,10 @@ class SongsAdapter(
         return false
     }
     private fun handleActionShare(song: Song?) {
+        if (isActionMode) {
+            actionMode?.finish()
+            actionMode = null
+        }
         if (song != null) {
             context.shareSongIntent(song)
         } else {
@@ -173,58 +196,14 @@ class SongsAdapter(
         }
     }
     private fun handleActionDelete(items: List<Song>) {
-        val alert = MaterialAlertDialogBuilder(context)
-        if (items.size == 1) {
-            alert.setTitle(R.string.delete_song)
-        } else if (items.size > 1) {
-            alert.setTitle(R.string.delete_songs)
+        if (isActionMode) {
+            actionMode?.finish()
+            actionMode = null
         }
-        val typedArray = arrayListOf<String>()
-        var isBreak = false
-        for (i in items.indices) {
-            if (i >= 9) {
-                isBreak = true
-                break
-            }
-            typedArray.add("${i + 1}-${items[i].title}")
-        }
-        if (isBreak) typedArray.add("${items.size}-${items.last().title}")
-        val dialogAdapter = object : ArrayAdapter<String>(context, R.layout.list_item_dialog, typedArray) {
-            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                val inflater = LayoutInflater.from(context)
-                var mView = convertView
-                if (mView == null) {
-                    mView = inflater.inflate(R.layout.list_item_dialog, parent, false)
-                }
-                val title: TextView = mView!!.findViewById(R.id.title)
-                title.text = typedArray[position]
-                return mView
-            }
-        }
-        alert.setAdapter(dialogAdapter, null)
-            .setPositiveButton(android.R.string.ok) { d, _ ->
-                if (context is BaseActivity) {
-                    context.deleteSongs(items) {
-                        if (subMode) {
-                            items.forEach {
-                                val index = dataSet.indexOf(it)
-                                if (index >= 0) {
-                                    dataSet.removeAt(index)
-                                    notifyItemRemoved(index)
-                                }
-                            }
-                        } else {
-                            context.onReloadLibrary()
-                        }
-                    }
-                    actionMode?.finish()
-                    actionMode = null
-                    d.dismiss()
-                }
-            }.setNegativeButton(android.R.string.cancel) { d, _ ->
-                d.dismiss()
-            }
-            .show()
+        DeleteSongsDialog.create(items).show(
+            context.supportFragmentManager,
+            "DELETE_SONGS"
+        )
     }
     inner class SongHolder(private val binding: ItemSongsBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bindItems(song: Song) {
@@ -246,15 +225,16 @@ class SongsAdapter(
                     song.duration.toFormattedDuration(false),
                     song.dateAdded.toFormattedDate()
                 )
+                val defIcon = context.getDrawableCompat(R.drawable.ic_audiotrack)
                 Glide.with(context)
+                    .asBitmap()
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .error(defIcon)
+                    .placeholder(defIcon)
+                    .signature(MediaStoreSignature("", song.dateModified, 0))
                     .load(song.albumId.toAlbumArtURI())
-                    .apply(
-                        RequestOptions()
-                            .placeholder(R.drawable.ic_audiotrack)
-                            .error(R.drawable.ic_audiotrack)
-                            .transform(CenterCrop())
-                    )
-                    .into(imgArtTrackItem)
+                    .into(binding.imgArtTrackItem)
+
                 root.setOnClickListener {
                     if (isActionMode) {
                         setItemViewSelected(absoluteAdapterPosition)

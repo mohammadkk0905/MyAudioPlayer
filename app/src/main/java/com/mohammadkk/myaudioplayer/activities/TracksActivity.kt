@@ -70,7 +70,7 @@ class TracksActivity : BaseActivity(), AdapterListener {
                 finish()
                 return
             }
-            initializeList()
+            initializeList("ALBUM")
             albumManager(albumId)
         } else if (intent.hasExtra(Constant.ARTIST_ID)) {
             supportActionBar?.title = getString(R.string.artist)
@@ -80,7 +80,7 @@ class TracksActivity : BaseActivity(), AdapterListener {
                 finish()
                 return
             }
-            initializeList()
+            initializeList("ARTIST")
             artistManager(artistId)
         }
     }
@@ -100,9 +100,9 @@ class TracksActivity : BaseActivity(), AdapterListener {
             }
         }
     }
-    private fun initializeList() {
+    private fun initializeList(mode: String) {
         val dataSet = if (songsAdapter != null) songsAdapter!!.dataSet else mutableListOf()
-        songsAdapter = SongsAdapter(this, dataSet, true)
+        songsAdapter = SongsAdapter(this, dataSet, mode)
         val spanCount = if (isLandscape) {
             resources.getInteger(R.integer.def_list_columns_land)
         } else {
@@ -137,6 +137,9 @@ class TracksActivity : BaseActivity(), AdapterListener {
                 android.R.anim.fade_out
             )
         }
+    }
+    override fun onReloadLibrary() {
+        songsAdapter?.swapDeleted()
     }
     override fun onCreateActionMode(callback: ActionMode.Callback): ActionMode? {
         if (mActionMode == null) {

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="main_pages">صفحات اصلی</string>
+    <string name="error_label">خطا</string>
     <string name="permission_storage_denied">اجازه دسترسی به فضای ذخیره‌سازی رد شد.</string>
     <string name="grant">اجازه دادن</string>
     <string name="yes">بله</string>
@@ -25,6 +26,7 @@
     <string name="year">سال</string>
     <string name="ascending">صعودی</string>
     <string name="descending">نزولی</string>
+    <string name="recheck_library">بررسی مجدد کتابخانه</string>
     <string name="share">اشتراک گذاری</string>
     <string name="remove_from_device">حذف از دستگاه</string>
     <string name="unknown_error_occurred">یک خطای ناشناخته رخ داد</string>
@@ -48,4 +50,8 @@
     <string name="shuffle_enabled">پخش تصادفی فعال شد</string>
     <string name="shuffle_disabled">پخش تصادفی غیر فعال شد</string>
     <string name="dismiss">رد</string>
+    <string name="scanning">در حال اسکن…</string>
+    <string name="scann_message">%1d فایل اسکن شدند.</string>
+    <string name="directory_scan">اسکن دایرکتوری</string>
+    <string name="nothing_to_scan">هیچ چیزی برای اسکن نیست.</string>
 </resources>

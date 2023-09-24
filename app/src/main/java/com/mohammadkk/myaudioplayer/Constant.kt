@@ -28,6 +28,7 @@ object Constant {
 
     // Notification
     private const val PATH = "com.mohammadkk.myaudioplayer.action."
+    const val SCANNER = PATH + "SCANNER"
     const val INIT = PATH + "INIT"
     const val PREVIOUS = PATH + "PREVIOUS"
     const val PAUSE = PATH + "PAUSE"
@@ -38,8 +39,15 @@ object Constant {
     const val SET_PROGRESS = PATH + "SET_PROGRESS"
     const val SKIP_BACKWARD = PATH + "SKIP_BACKWARD"
     const val SKIP_FORWARD = PATH + "SKIP_FORWARD"
+    const val REFRESH_LIST = PATH + "REFRESH_LIST"
     const val BROADCAST_STATUS = PATH + "BROADCAST_STATUS"
     const val NOTIFICATION_DISMISSED = PATH + "NOTIFICATION_DISMISSED"
+
+    val STORAGE_PERMISSION get() = when {
+        isTiramisuPlus() -> Manifest.permission.READ_MEDIA_AUDIO
+        isRPlus() -> Manifest.permission.READ_EXTERNAL_STORAGE
+        else -> Manifest.permission.WRITE_EXTERNAL_STORAGE
+    }
 
     fun isBlockingClick(): Boolean {
         val isBlocking: Boolean
@@ -47,12 +55,6 @@ object Constant {
         isBlocking = abs(currentTime - lastClickTime) < 500L
         if (!isBlocking) lastClickTime = currentTime
         return isBlocking
-    }
-
-    fun storagePermissionApi() = when {
-        isTiramisuPlus() -> Manifest.permission.READ_MEDIA_AUDIO
-        isRPlus() -> Manifest.permission.READ_EXTERNAL_STORAGE
-        else -> Manifest.permission.WRITE_EXTERNAL_STORAGE
     }
     fun ensureBackgroundThread(callback: () -> Unit) {
         if (isOnMainThread()) {
