@@ -10,6 +10,8 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.hardware.usb.UsbConstants
+import android.hardware.usb.UsbManager
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
@@ -20,6 +22,7 @@ import androidx.annotation.DrawableRes
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import androidx.documentfile.provider.DocumentFile
 import com.bumptech.glide.util.Util.isOnMainThread
 import com.google.android.material.color.MaterialColors
 import com.mohammadkk.myaudioplayer.Constant
@@ -71,6 +74,24 @@ fun Context.getPrimaryColor(): Int {
     var primary = MaterialColors.getColor(this, androidx.appcompat.R.attr.colorPrimary, Color.TRANSPARENT)
     if (primary == Color.TRANSPARENT) primary = getColorCompat(R.color.light_blue_500)
     return primary
+}
+fun Context.isMassUsbDeviceConnected(): Boolean {
+    val usbManager = getSystemService(Context.USB_SERVICE) as? UsbManager
+    val devices = usbManager?.deviceList ?: return false
+    for (mDeviceName in devices) {
+        val dc = mDeviceName.value
+        for (i in 0 until dc.interfaceCount) {
+            if (dc.getInterface(i).interfaceClass == UsbConstants.USB_CLASS_MASS_STORAGE) {
+                return true
+            }
+        }
+    }
+    return false
+}
+fun Context.fromTreeUri(fileUri: Uri) = try {
+    DocumentFile.fromTreeUri(this, fileUri)
+} catch (e: Exception) {
+    null
 }
 fun Activity.shareSongsIntent(songs: List<Song>) {
     if (songs.size == 1) {

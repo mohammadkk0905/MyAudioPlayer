@@ -138,7 +138,7 @@ class ScannerService : Service() {
     }
     companion object {
         private val AUDIO_FILE_FILTER = FileFilter { file: File ->
-            !file.isHidden && (file.isDirectory || FileUtils.isAudioFile(file))
+            !file.isHidden && (file.isDirectory || FileUtils.isAudioFile(file.path))
         }
     }
 }

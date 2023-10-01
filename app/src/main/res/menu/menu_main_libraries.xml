@@ -18,4 +18,8 @@
         android:id="@+id/action_recheck_library"
         android:title="@string/recheck_library"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_usb_otg"
+        android:title="@string/usb_device"
+        app:showAsAction="never" />
 </menu>

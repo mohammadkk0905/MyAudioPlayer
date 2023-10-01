@@ -4,8 +4,11 @@ import android.content.Context
 import android.database.Cursor
 import android.provider.MediaStore
 import android.provider.MediaStore.Audio
+import androidx.core.net.toUri
 import com.mohammadkk.myaudioplayer.BaseSettings
 import com.mohammadkk.myaudioplayer.Constant
+import com.mohammadkk.myaudioplayer.extensions.fromTreeUri
+import com.mohammadkk.myaudioplayer.extensions.parseSong
 import com.mohammadkk.myaudioplayer.models.Song
 import java.text.Collator
 import kotlin.math.abs
@@ -93,6 +96,13 @@ object Libraries {
         val selection = "${Audio.AudioColumns.ARTIST_ID} = ?"
         val selectionArgs = arrayOf(id.toString())
         return fetchAllSongs(context, selection, selectionArgs)
+    }
+    fun fetchSongsByOtg(context: Context): List<Song> {
+        val documentFile = context.fromTreeUri(BaseSettings.getInstance().otgTreeUri.toUri())
+        if (documentFile == null || !documentFile.exists()) return emptyList()
+        var index = 0
+        val items = FileUtils.listFilesDeep(context.applicationContext, documentFile.uri)
+        return items.mapNotNull { it.parseSong(index++) }
     }
     fun getSectionName(mediaTitle: String?, stripPrefix: Boolean = false): String {
         var mMediaTitle = mediaTitle

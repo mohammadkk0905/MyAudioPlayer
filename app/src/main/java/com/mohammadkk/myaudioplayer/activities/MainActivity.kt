@@ -1,5 +1,6 @@
 package com.mohammadkk.myaudioplayer.activities
 
+import android.app.Activity
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
@@ -14,10 +15,13 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.view.ActionMode
 import androidx.appcompat.widget.SearchView
 import androidx.core.app.ActivityCompat
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
@@ -32,10 +36,13 @@ import com.mohammadkk.myaudioplayer.R
 import com.mohammadkk.myaudioplayer.databinding.ActivityMainBinding
 import com.mohammadkk.myaudioplayer.databinding.PlayerControllerBinding
 import com.mohammadkk.myaudioplayer.dialogs.ScanMediaFoldersDialog
+import com.mohammadkk.myaudioplayer.extensions.fromTreeUri
 import com.mohammadkk.myaudioplayer.extensions.hasNotificationApi
 import com.mohammadkk.myaudioplayer.extensions.hasPermission
+import com.mohammadkk.myaudioplayer.extensions.isMassUsbDeviceConnected
 import com.mohammadkk.myaudioplayer.extensions.reduceDragSensitivity
 import com.mohammadkk.myaudioplayer.extensions.sendIntent
+import com.mohammadkk.myaudioplayer.extensions.toast
 import com.mohammadkk.myaudioplayer.fragments.AlbumsFragment
 import com.mohammadkk.myaudioplayer.fragments.ArtistsFragment
 import com.mohammadkk.myaudioplayer.fragments.SongsFragment
@@ -49,6 +56,7 @@ class MainActivity : BaseActivity(), AdapterListener {
     private lateinit var binding2: PlayerControllerBinding
     private val musicViewModel: MusicViewModel by viewModels()
     private var mActionMode: ActionMode? = null
+    private var safIntentLauncher: ActivityResultLauncher<Intent>? = null
     private var isBoundService = false
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -146,6 +154,23 @@ class MainActivity : BaseActivity(), AdapterListener {
         }
     }
     private fun setupElementUi() {
+        safIntentLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
+            if (res.resultCode == Activity.RESULT_OK && res.data?.data != null) {
+                val contentUri = res.data?.data!!
+                if (isOTGRootFolder(contentUri)) {
+                    settings.otgTreeUri = contentUri.toString()
+                    settings.otgPartition = settings.otgTreeUri.removeSuffix("%3A").substringAfterLast('/').trimEnd('/')
+                    val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    applicationContext.contentResolver.takePersistableUriPermission(contentUri, takeFlags)
+                    Intent(this, TracksActivity::class.java).apply {
+                        putExtra("otg", true)
+                        startActivity(this)
+                    }
+                } else {
+                    startOtgPicker()
+                }
+            }
+        }
         val adapter = SlidePagerAdapter(supportFragmentManager, lifecycle)
         binding.mainPager.offscreenPageLimit = adapter.itemCount.minus(1)
         binding.mainPager.orientation = ViewPager2.ORIENTATION_HORIZONTAL
@@ -183,8 +208,16 @@ class MainActivity : BaseActivity(), AdapterListener {
     }
     private fun setupRequires() {
         musicViewModel.updateLibraries()
-        BaseSettings.initialize(applicationContext)
+        BaseSettings.initialize(application)
         hasNotificationApi()
+    }
+    private fun startOtgPicker() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        try {
+            safIntentLauncher?.launch(intent)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_main_libraries, menu)
@@ -210,12 +243,30 @@ class MainActivity : BaseActivity(), AdapterListener {
         return super.onCreateOptionsMenu(menu)
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.action_recheck_library) {
-            val dialog = ScanMediaFoldersDialog()
-            dialog.show(supportFragmentManager, "SCAN_MEDIA_FOLDER_CHOOSER")
-        } else {
-            val library = musicViewModel.fragmentLibraries[binding.mainPager.currentItem]
-            library?.onSelectedItemMenu(item)
+        when (item.itemId) {
+            R.id.action_recheck_library -> {
+                val dialog = ScanMediaFoldersDialog()
+                dialog.show(supportFragmentManager, "SCAN_MEDIA_FOLDER_CHOOSER")
+            }
+            R.id.action_usb_otg -> {
+                if (isMassUsbDeviceConnected()) {
+                    val otgDirectory = fromTreeUri(settings.otgTreeUri.toUri())
+                    if (otgDirectory == null || !otgDirectory.exists()) {
+                        startOtgPicker()
+                    } else {
+                        Intent(this, TracksActivity::class.java).apply {
+                            putExtra("otg", true)
+                            startActivity(this)
+                        }
+                    }
+                } else {
+                    toast(R.string.usb_device_not_found)
+                }
+            }
+            else -> {
+                val library = musicViewModel.fragmentLibraries[binding.mainPager.currentItem]
+                library?.onSelectedItemMenu(item)
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -251,6 +302,9 @@ class MainActivity : BaseActivity(), AdapterListener {
     }
     override fun onReloadLibrary() {
         musicViewModel.updateLibraries()
+        if (MusicService.isMusicPlayer()) {
+            sendIntent(Constant.REFRESH_LIST)
+        }
     }
     override fun onBindService() {
         if (!isBoundService) {

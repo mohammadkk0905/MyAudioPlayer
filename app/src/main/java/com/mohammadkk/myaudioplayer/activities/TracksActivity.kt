@@ -1,18 +1,28 @@
 package com.mohammadkk.myaudioplayer.activities
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.hardware.usb.UsbManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.AndroidRuntimeException
+import android.util.Log
 import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.view.ActionMode
+import androidx.core.view.isVisible
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.GridLayoutManager
 import com.mohammadkk.myaudioplayer.Constant
 import com.mohammadkk.myaudioplayer.R
 import com.mohammadkk.myaudioplayer.adapters.SongsAdapter
 import com.mohammadkk.myaudioplayer.databinding.ActivityTracksBinding
 import com.mohammadkk.myaudioplayer.extensions.isLandscape
+import com.mohammadkk.myaudioplayer.extensions.sendIntent
 import com.mohammadkk.myaudioplayer.extensions.toast
 import com.mohammadkk.myaudioplayer.listeners.AdapterListener
 import com.mohammadkk.myaudioplayer.services.MusicService
@@ -31,6 +41,21 @@ class TracksActivity : BaseActivity(), AdapterListener {
     private var mActionMode: ActionMode? = null
     private var fastScroller: FastScroller? = null
     private var songsAdapter: SongsAdapter? = null
+    private val receiverUsb = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                UsbManager.ACTION_USB_DEVICE_ATTACHED -> {
+                    Log.d("TracksActivity", "Usb otg connected")
+                }
+                UsbManager.ACTION_USB_DEVICE_DETACHED -> {
+                    if (MusicService.isMusicPlayer()) {
+                        sendIntent(Constant.FINISH)
+                        finish()
+                    }
+                }
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,15 +63,18 @@ class TracksActivity : BaseActivity(), AdapterListener {
         binding = ActivityTracksBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.mainActionBar)
+        initRefreshing(true)
         getInputMethod()
+        registerUSBReceiver()
         subViewModel.getListData().observe(this) {
-            songsAdapter?.swapDataSet(Libraries.getSortedSongs(it))
-            if (binding.tracksRefresh.isRefreshing) {
-                binding.tracksRefresh.isRefreshing = false
-            }
+            val items = Libraries.getSortedSongs(it)
+            songsAdapter?.swapDataSet(items)
+            initRefreshing(false)
         }
         binding.tracksRefresh.setOnRefreshListener {
+            initRefreshing(true)
             Handler(Looper.getMainLooper()).postDelayed({
+                binding.tracksRefresh.isRefreshing = false
                 getInputMethod()
             }, 200)
         }
@@ -60,6 +88,11 @@ class TracksActivity : BaseActivity(), AdapterListener {
                 finish()
             }
         }
+    }
+    private fun initRefreshing(isDisabled: Boolean) {
+        binding.progressCircular.isVisible = isDisabled
+        binding.progressCircular.isIndeterminate = isDisabled
+        binding.tracksRefresh.isEnabled = !isDisabled
     }
     private fun getInputMethod() {
         if (intent.hasExtra(Constant.ALBUM_ID)) {
@@ -82,6 +115,9 @@ class TracksActivity : BaseActivity(), AdapterListener {
             }
             initializeList("ARTIST")
             artistManager(artistId)
+        } else if (intent.getBooleanExtra("otg", false)) {
+            initializeList("OTG")
+            subViewModel.handleOTG(this)
         }
     }
     private fun albumManager(albumId: Long) {
@@ -115,6 +151,28 @@ class TracksActivity : BaseActivity(), AdapterListener {
             fastScroller = FastScrollerBuilder(binding.tracksRv).useMd2Style().setPadding(0, 0, 0, 0).build()
         }
     }
+    private fun registerUSBReceiver() {
+        if (intent.getBooleanExtra("otg", false)) {
+            val intentFilter = IntentFilter().apply {
+                addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
+                addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
+            }
+            try {
+                applicationContext.registerReceiver(receiverUsb, intentFilter)
+            } catch (e: AndroidRuntimeException) {
+                LocalBroadcastManager.getInstance(applicationContext).registerReceiver(receiverUsb, intentFilter)
+            }
+        }
+    }
+    private fun unregisterUSBReceiver() {
+        if (intent.getBooleanExtra("otg", false)) {
+            try {
+                applicationContext.unregisterReceiver(receiverUsb)
+            } catch (e: AndroidRuntimeException) {
+                LocalBroadcastManager.getInstance(applicationContext).unregisterReceiver(receiverUsb)
+            }
+        }
+    }
     override fun onResume() {
         super.onResume()
         if (MusicService.isMusicPlayer()) {
@@ -138,8 +196,15 @@ class TracksActivity : BaseActivity(), AdapterListener {
             )
         }
     }
+    override fun onDestroy() {
+        unregisterUSBReceiver()
+        super.onDestroy()
+    }
     override fun onReloadLibrary() {
         songsAdapter?.swapDeleted()
+        if (MusicService.isMusicPlayer()) {
+            sendIntent(Constant.REFRESH_LIST)
+        }
     }
     override fun onCreateActionMode(callback: ActionMode.Callback): ActionMode? {
         if (mActionMode == null) {

@@ -31,6 +31,7 @@ import com.mohammadkk.myaudioplayer.extensions.shareSongsIntent
 import com.mohammadkk.myaudioplayer.extensions.toAlbumArtURI
 import com.mohammadkk.myaudioplayer.extensions.toFormattedDate
 import com.mohammadkk.myaudioplayer.extensions.toFormattedDuration
+import com.mohammadkk.myaudioplayer.glide.loader.AudioFileCover
 import com.mohammadkk.myaudioplayer.listeners.AdapterListener
 import com.mohammadkk.myaudioplayer.models.Song
 import com.mohammadkk.myaudioplayer.models.StateMode
@@ -99,7 +100,15 @@ class SongsAdapter(
     }
     override fun getPopupText(view: View, position: Int): CharSequence {
         val song = dataSet.getOrNull(position)
-        val result = when (abs(settings.songsSorting)) {
+        val sortName = abs(settings.songsSorting)
+        if (mode == "OTG") {
+            return if (sortName == Constant.SORT_BY_DATE_ADDED) {
+                song?.duration?.toFormattedDuration(true) ?: "-"
+            } else {
+                Libraries.getSectionName(song?.title, true)
+            }
+        }
+        val result = when (sortName) {
             Constant.SORT_BY_TITLE -> song?.title
             Constant.SORT_BY_ALBUM -> song?.album
             Constant.SORT_BY_ARTIST -> song?.artist
@@ -184,14 +193,15 @@ class SongsAdapter(
         return false
     }
     private fun handleActionShare(song: Song?) {
+        var items = listOf<Song>()
         if (isActionMode) {
+            items = itemsSelected.map { dataSet[it] }
             actionMode?.finish()
             actionMode = null
         }
         if (song != null) {
             context.shareSongIntent(song)
         } else {
-            val items = itemsSelected.map { dataSet[it] }
             context.shareSongsIntent(items)
         }
     }
@@ -211,28 +221,33 @@ class SongsAdapter(
                 if (itemsSelected.contains(absoluteAdapterPosition)) {
                     root.isActivated = true
                     ivMoreOptions.setImageResource(R.drawable.ic_check_circle)
-                    ivMoreOptions.rotation = 0f
                     ivMoreOptions.setBackgroundResource(android.R.color.transparent)
                 } else {
                     root.isActivated = false
-                    ivMoreOptions.setImageResource(R.drawable.ic_more_vert)
-                    ivMoreOptions.rotation = 90f
+                    ivMoreOptions.setImageResource(R.drawable.ic_more_horiz)
                     ivMoreOptions.setBackgroundResource(R.drawable.round_selector)
                 }
                 tvTitleTrackItem.text = song.title
-                tvTrackHistroyItem.text = context.getString(
-                    R.string.duration_date_symbol,
-                    song.duration.toFormattedDuration(false),
-                    song.dateAdded.toFormattedDate()
-                )
+                if (mode != "OTG") {
+                    tvTrackHistroyItem.text = context.getString(
+                        R.string.duration_date_symbol,
+                        song.duration.toFormattedDuration(false),
+                        song.dateAdded.toFormattedDate()
+                    )
+                } else {
+                    tvTrackHistroyItem.text = song.dateAdded.toFormattedDate()
+                }
                 val defIcon = context.getDrawableCompat(R.drawable.ic_audiotrack)
+                val dataImage: Any = if (mode != "OTG") {
+                    song.albumId.toAlbumArtURI()
+                } else AudioFileCover(song.path)
                 Glide.with(context)
                     .asBitmap()
                     .diskCacheStrategy(DiskCacheStrategy.NONE)
                     .error(defIcon)
                     .placeholder(defIcon)
                     .signature(MediaStoreSignature("", song.dateModified, 0))
-                    .load(song.albumId.toAlbumArtURI())
+                    .load(dataImage)
                     .into(binding.imgArtTrackItem)
 
                 root.setOnClickListener {
@@ -257,7 +272,9 @@ class SongsAdapter(
                             val popupMenu = PopupMenu(context, v)
                             popupMenu.inflate(R.menu.menu_action_song)
                             val deleted = popupMenu.menu.findItem(R.id.action_remove_file)
+                            val ringtone = popupMenu.menu.findItem(R.id.action_ringtone)
                             deleted.setTitleColor(context.getColorCompat(R.color.red_500))
+                            ringtone.isVisible = mode != "OTG"
                             popupMenu.setOnMenuItemClickListener {
                                 clickHandlePopupMenu(it, dataSet[absoluteAdapterPosition])
                             }

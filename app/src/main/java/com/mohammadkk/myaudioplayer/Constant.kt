@@ -26,6 +26,8 @@ object Constant {
     const val RESTART_PLAYER = "restart_player"
     const val PROGRESS = "progress"
 
+    const val EXTERNAL_STORAGE_AUTHORITY = "com.android.externalstorage.documents"
+
     // Notification
     private const val PATH = "com.mohammadkk.myaudioplayer.action."
     const val SCANNER = PATH + "SCANNER"

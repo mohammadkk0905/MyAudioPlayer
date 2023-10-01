@@ -6,18 +6,20 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".activities.TracksActivity">
+
     <RelativeLayout
         android:id="@+id/mainLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
+
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/mainActionBar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:layout_alignParentTop="true"
             android:background="?attr/colorPrimary"
             android:elevation="2dp"
-            android:layout_alignParentTop="true"
             android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
             app:navigationIcon="@drawable/ic_west"
             app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"
@@ -42,6 +44,15 @@
                 tools:itemCount="8"
                 tools:listitem="@layout/item_songs" />
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressCircular"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/mainActionBar"
+            android:visibility="gone"
+            app:showAnimationBehavior="inward"
+            app:showDelay="250" />
     </RelativeLayout>
 
     <androidx.fragment.app.FragmentContainerView

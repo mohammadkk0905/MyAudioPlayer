@@ -13,6 +13,9 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.signature.MediaStoreSignature
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.mohammadkk.myaudioplayer.BaseSettings
@@ -25,19 +28,15 @@ import com.mohammadkk.myaudioplayer.extensions.getColorCompat
 import com.mohammadkk.myaudioplayer.extensions.getDrawableCompat
 import com.mohammadkk.myaudioplayer.extensions.getPlayingIcon
 import com.mohammadkk.myaudioplayer.extensions.getPrimaryColor
-import com.mohammadkk.myaudioplayer.extensions.getTrackArt
 import com.mohammadkk.myaudioplayer.extensions.sendIntent
 import com.mohammadkk.myaudioplayer.extensions.toast
 import com.mohammadkk.myaudioplayer.extensions.updateIconTint
+import com.mohammadkk.myaudioplayer.glide.loader.AudioFileCover
 import com.mohammadkk.myaudioplayer.models.Song
 import com.mohammadkk.myaudioplayer.services.MusicService
 import com.mohammadkk.myaudioplayer.ui.MusicSeekBar
 import com.mohammadkk.myaudioplayer.utils.PlaybackRepeat
 import com.mohammadkk.myaudioplayer.viewmodels.PlaybackViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.Locale
 
 class PlayerActivity : AppCompatActivity() {
@@ -106,16 +105,15 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
     private fun initializeSongInfo(song: Song) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val coverArt = song.getTrackArt(applicationContext)
-            withContext(Dispatchers.Main) {
-                if (coverArt != null) {
-                    binding.playbackCover.setImageBitmap(coverArt)
-                } else {
-                    binding.playbackCover.setImageDrawable(createPlaceholder())
-                }
-            }
-        }
+        Glide.with(applicationContext)
+            .asBitmap()
+            .diskCacheStrategy(DiskCacheStrategy.NONE)
+            .error(createPlaceholder())
+            .placeholder(createPlaceholder())
+            .signature(MediaStoreSignature("", song.dateModified, 0))
+            .load(AudioFileCover(song.path))
+            .into(binding.playbackCover)
+
         binding.playbackSong.text = song.title
         binding.playbackAlbum.text = song.album
         binding.playbackArtist.text = song.artist
@@ -227,7 +225,7 @@ class PlayerActivity : AppCompatActivity() {
         val isShuffle = baseSettings.isShuffleEnabled
         binding.playbackShuffle.apply {
             alpha = if (isShuffle) 1f else 0.9f
-            updateIconTint(if (isShuffle) getPrimaryColor() else getColorCompat(R.color.grey_800))
+            updateIconTint(if (isShuffle) getPrimaryColor() else getColorCompat(R.color.widgets_color))
             contentDescription = getString(if (isShuffle) R.string.shuffle_enabled else R.string.shuffle_disabled)
         }
     }
@@ -244,7 +242,7 @@ class PlayerActivity : AppCompatActivity() {
             setImageResource(playbackRepeat.iconRes)
             val isRepeatOff = playbackRepeat == PlaybackRepeat.REPEAT_OFF
             alpha = if (isRepeatOff) 0.9f else 1f
-            updateIconTint(if (isRepeatOff) getColorCompat(R.color.grey_800) else getPrimaryColor())
+            updateIconTint(if (isRepeatOff) getColorCompat(R.color.widgets_color) else getPrimaryColor())
         }
     }
     private fun setPlayPause(isAnim: Boolean, playing: Boolean) {

@@ -8,7 +8,7 @@
     <color name="purple_500">#9C27B0</color>
     <color name="deep_purple_700">#512DA8</color>
     <color name="deep_purple_a200">#7C4DFF</color>
-    <color name="blue_100">#BBDEFB</color>
+    <color name="blue_primary_container">#BAE9FF</color>
     <color name="blue_300">#64B5F6</color>
     <color name="blue_500">#2196F3</color>
     <color name="blue_a400">#2979FF</color>
@@ -29,5 +29,6 @@
     <color name="blue_grey_800">#37474F</color>
     <color name="blue_grey_900">#263238</color>
 
+    <color name="widgets_color">#212121</color>
     <color name="main_bg">#FCFCFC</color>
 </resources>

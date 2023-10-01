@@ -1,9 +1,8 @@
 package com.mohammadkk.myaudioplayer.extensions
 
-import android.animation.Animator
-import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Service
+import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.graphics.BlendMode
 import android.graphics.BlendModeColorFilter
@@ -13,20 +12,14 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.MenuItem
-import android.view.View
-import android.view.ViewAnimationUtils
 import android.widget.ImageView
 import androidx.annotation.ColorInt
-import androidx.core.animation.doOnEnd
 import androidx.core.app.ServiceCompat
 import androidx.core.widget.ImageViewCompat
-import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
-import com.google.android.material.animation.ArgbEvaluatorCompat
 import com.mohammadkk.myaudioplayer.Constant
 import com.mohammadkk.myaudioplayer.R
-import kotlin.math.max
 
 fun ViewPager2.reduceDragSensitivity() {
     try {
@@ -79,30 +72,6 @@ fun Service.stopForegroundCompat(isRemoved: Boolean) {
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_DETACH)
     }
 }
-fun View.createCirculeReveal(show: Boolean): Animator {
-    val revealDuration = 500L
-    val radius = max(width, height).toFloat()
-    var startRadius = radius
-    var finalRadius = 0F
-    if (show) {
-        startRadius = 0F
-        finalRadius = radius
-    }
-    val animator = ViewAnimationUtils.createCircularReveal(
-        this, 0, 0, startRadius, finalRadius
-    ).apply {
-        interpolator = FastOutSlowInInterpolator()
-        duration = revealDuration
-        doOnEnd { visibility = if (show) View.VISIBLE else View.GONE }
-        start()
-    }
-    val mainBackground = context.getColorCompat(R.color.main_bg)
-    with(ValueAnimator()) {
-        setIntValues(mainBackground, mainBackground)
-        setEvaluator(ArgbEvaluatorCompat())
-        addUpdateListener { valueAnimator -> setBackgroundColor((valueAnimator.animatedValue as Int)) }
-        duration = revealDuration
-        start()
-    }
-    return animator
+fun SharedPreferences.getStringOrDefault(key: String, defValue: String): String {
+    return getString(key, defValue) ?: defValue
 }

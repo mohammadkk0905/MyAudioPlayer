@@ -54,4 +54,6 @@
     <string name="scann_message">%1d files were scanned.</string>
     <string name="directory_scan">Directory scan</string>
     <string name="nothing_to_scan">Nothing to scan.</string>
+    <string name="usb_device">USB device</string>
+    <string name="usb_device_not_found">USB device not found</string>
 </resources>

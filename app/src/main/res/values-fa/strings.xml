@@ -54,4 +54,6 @@
     <string name="scann_message">%1d فایل اسکن شدند.</string>
     <string name="directory_scan">اسکن دایرکتوری</string>
     <string name="nothing_to_scan">هیچ چیزی برای اسکن نیست.</string>
+    <string name="usb_device">دستگاه USB</string>
+    <string name="usb_device_not_found">دستگاه USB ای یافت نشد</string>
 </resources>

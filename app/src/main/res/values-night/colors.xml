@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="blue_primary_container">#004D64</color>
+
+    <color name="widgets_color">#FAFAFA</color>
+    <color name="main_bg">#151515</color>
+</resources>

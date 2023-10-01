@@ -12,7 +12,7 @@
         style="@style/Widget.Audio.Toolbar.Icon"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:navigationIconTint="@color/grey_800"
+        app:navigationIconTint="@color/widgets_color"
         app:title="@string/playing"
         app:titleCentered="true" />
 
@@ -98,7 +98,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacing_medium"
         android:background="@drawable/round_selector"
-        android:contentDescription="@string/playing"
+        android:contentDescription="@string/repeat_off"
         android:padding="@dimen/spacing_mid_medium"
         android:src="@drawable/ic_repeat"
         app:layout_constraintBottom_toBottomOf="@+id/playback_skip_prev"
@@ -116,8 +116,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/playback_play_pause"
         app:layout_constraintEnd_toStartOf="@+id/playback_play_pause"
         app:layout_constraintStart_toEndOf="@+id/playback_repeat"
-        app:layout_constraintTop_toTopOf="@+id/playback_play_pause"
-        app:tint="@color/grey_800" />
+        app:layout_constraintTop_toTopOf="@+id/playback_play_pause" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/playback_play_pause"
@@ -143,8 +142,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/playback_play_pause"
         app:layout_constraintEnd_toStartOf="@+id/playback_shuffle"
         app:layout_constraintStart_toEndOf="@+id/playback_play_pause"
-        app:layout_constraintTop_toTopOf="@+id/playback_play_pause"
-        app:tint="@color/grey_800" />
+        app:layout_constraintTop_toTopOf="@+id/playback_play_pause" />
 
     <ImageButton
         android:id="@+id/playback_shuffle"
@@ -158,7 +156,6 @@
         android:src="@drawable/ic_shuffle"
         app:layout_constraintBottom_toBottomOf="@+id/playback_skip_next"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/playback_skip_next"
-        app:tint="@color/grey_800" />
+        app:layout_constraintTop_toTopOf="@+id/playback_skip_next" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

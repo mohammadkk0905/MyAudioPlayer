@@ -6,10 +6,12 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.MediaMetadataRetriever
 import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.provider.MediaStore
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
@@ -32,7 +34,6 @@ import com.mohammadkk.myaudioplayer.utils.Libraries
 import com.mohammadkk.myaudioplayer.utils.MusicPlayer
 import com.mohammadkk.myaudioplayer.utils.NotificationUtils
 import com.mohammadkk.myaudioplayer.utils.PlaybackRepeat
-import java.io.File
 import java.io.IOException
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -164,10 +165,25 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
                 break
             }
         }
+        initializeMetadata()
         checkSongShuffle()
         initMediaPlayerIfNeeded()
         startForegroundWithNotify()
         isServiceInit = true
+    }
+    private fun initializeMetadata() {
+        if (mCurrSong?.isOTGMode() == true) {
+            val mrr = MediaMetadataRetriever()
+            try {
+                mrr.setDataSource(this, mCurrSong!!.path.toUri())
+                val album = mrr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM) ?: MediaStore.UNKNOWN_STRING
+                val artist = mrr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST) ?: MediaStore.UNKNOWN_STRING
+                val duration = mrr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toInt() ?: 0
+                mrr.release()
+                mCurrSong = mCurrSong!!.copy(album = album, artist = artist, duration = duration)
+            } catch (ignored: Exception) {
+            }
+        }
     }
     private fun onHandleInit(intent: Intent? = null) {
         Constant.ensureBackgroundThread {
@@ -193,6 +209,7 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
             if (currIndex < 0) currIndex = mSongs.lastIndex
             mSongs[currIndex]
         }
+        initializeMetadata()
         setSong(mCurrSong!!.id)
     }
     private fun onHandlePlayPause() {
@@ -244,18 +261,27 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
         return when (mSongs.size) {
             0 -> -1L
             1 -> {
-                if (isChange) mCurrSong = mSongs.first()
+                if (isChange) {
+                    mCurrSong = mSongs.first()
+                    initializeMetadata()
+                }
                 mSongs.first().id
             }
             else -> {
                 val currentIndex = mSongs.indexOfFirst { it.id == mCurrSong?.id }
                 if (currentIndex != -1) {
                     val nextSong = mSongs[(currentIndex + 1) % mSongs.size]
-                    if (isChange) mCurrSong = nextSong
+                    if (isChange) {
+                        mCurrSong = nextSong
+                        initializeMetadata()
+                    }
                     nextSong.id
                 } else {
                     val nextSong = settings.lastPlaying?.first
-                    if (isChange) mCurrSong = nextSong
+                    if (isChange) {
+                        mCurrSong = nextSong
+                        initializeMetadata()
+                    }
                     nextSong?.id ?: -1L
                 }
             }
@@ -351,21 +377,18 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
     private fun loadingItems() {
         val lastState = settings.lastStateMode
         when (lastState.mode) {
-            "ALBUM" -> {
-                mSongs = Libraries.getSortedSongs(
+            "ALBUM" -> mSongs = Libraries.getSortedSongs(
                     Libraries.fetchSongsByAlbumId(baseContext, lastState.id)
                 ).toMutableList()
-            }
-            "ARTIST" -> {
-                mSongs = Libraries.getSortedSongs(
+            "ARTIST" -> mSongs = Libraries.getSortedSongs(
                     Libraries.fetchSongsByArtistId(baseContext, lastState.id)
                 ).toMutableList()
-            }
-            else -> {
-                mSongs = Libraries.getSortedSongs(
-                    Libraries.fetchAllSongs(baseContext, null, null)
-                ).toMutableList()
-            }
+            "OTG" -> mSongs = Libraries.getSortedSongs(
+                Libraries.fetchSongsByOtg(baseContext)
+            ).toMutableList()
+            else -> mSongs = Libraries.getSortedSongs(
+                Libraries.fetchAllSongs(baseContext, null, null)
+            ).toMutableList()
         }
     }
     private fun checkSongShuffle() {
@@ -402,10 +425,7 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
             mCurrSong = mSongs.firstOrNull { it.id == wantedId } ?: return
         }
         try {
-            val songUri = if (mCurrSong!!.id == 0L) {
-                File(mCurrSong!!.path).toUri()
-            } else mCurrSong!!.id.toContentUri()
-
+            val songUri = mCurrSong!!.requireContentUri()
             mPlayer!!.setDataSource(songUri)
             songChanged()
         } catch (e: IOException) {
@@ -444,7 +464,7 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
             .putString(MediaMetadataCompat.METADATA_KEY_TITLE, mCurrSong?.title ?: "")
             .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, mCurrSong?.id?.toString())
             .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, (mCurrSong?.duration ?: 0).toLong())
-            .putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, mSongs.indexOf(mCurrSong).toLong() + 1)
+            .putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, (findIndex() + 1).toLong())
             .putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, mSongs.size.toLong())
             .build()
 
@@ -475,12 +495,9 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
         if (mPlaceholder == null) {
             mPlaceholder = BitmapFactory.decodeResource(resources, R.drawable.ic_music_large)
         }
-        if (File(mCurrSong?.path ?: "").exists()) {
-            val rawArt = mCurrSong?.getTrackArt(baseContext ?: applicationContext)
-            if (rawArt != null) return rawArt
-        }
-        val albumArt = mCurrSong?.getAlbumArt(baseContext ?: applicationContext)
-        if (albumArt != null) return albumArt
+        val mContext = baseContext ?: applicationContext
+        val rawArt = mCurrSong?.getTrackArt(mContext) ?: mCurrSong?.getAlbumArt(mContext)
+        if (rawArt != null) return rawArt
         if (Constant.isQPlus()) {
             if (mCurrSong?.path?.startsWith("content://") == true) {
                 try {
@@ -658,6 +675,8 @@ class MusicService : Service(), MusicPlayer.PlaybackListener {
 
         fun isMusicPlayer() = mPlayer != null
         fun isPlaying() = mPlayer != null && mPlayer!!.isPlaying()
-        fun findIndex() = if (mCurrSong == null) -1 else mSongs.indexOf(mCurrSong)
+        fun findIndex() = if (mCurrSong?.isOTGMode() == true) {
+            mSongs.indexOfFirst { it.id == mCurrSong!!.id }
+        } else mSongs.indexOf(mCurrSong)
     }
 }

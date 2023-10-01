@@ -1,18 +1,20 @@
 package com.mohammadkk.myaudioplayer
 
-import android.content.Context
+import android.app.Application
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
+import com.mohammadkk.myaudioplayer.extensions.getStringOrDefault
 import com.mohammadkk.myaudioplayer.models.Song
 import com.mohammadkk.myaudioplayer.models.StateMode
 import com.mohammadkk.myaudioplayer.utils.PlaybackRepeat
 import java.lang.reflect.Type
 
-class BaseSettings(context: Context) {
-    private val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+class BaseSettings(app: Application) {
+    private val application = app
+    private val prefs = PreferenceManager.getDefaultSharedPreferences(app.applicationContext)
     private val gson = GsonBuilder().create()
     private val songType = object : TypeToken<Pair<Song, Int>>() {}.type
     private val stateType = object : TypeToken<StateMode>() {}.type
@@ -60,6 +62,17 @@ class BaseSettings(context: Context) {
         get() = getObject("last_state_mode", stateType) ?: StateMode("MAIN", -1L)
         set(value) = putObject("last_state_mode", value)
 
+    var otgTreeUri: String
+        get() = prefs.getStringOrDefault("otg_tree_uri", "")
+        set(value) = prefs.edit { putString("otg_tree_uri", value) }
+
+    var otgPartition: String
+        get() = prefs.getStringOrDefault("otg_partition", "")
+        set(value) = prefs.edit { putString("otg_partition", value) }
+
+    fun getContext(): Application {
+        return application
+    }
     private fun <T> getObject(key: String, type: Type): T? {
         val json = prefs.getString(key, null) ?: return null
         return try {
@@ -80,9 +93,9 @@ class BaseSettings(context: Context) {
         @Volatile
         private var INSTANCE: BaseSettings? = null
 
-        fun initialize(context: Context): BaseSettings {
+        fun initialize(application: Application): BaseSettings {
             return INSTANCE ?: synchronized(this) {
-                val instance = BaseSettings(context)
+                val instance = BaseSettings(application)
                 INSTANCE = instance
                 instance
             }

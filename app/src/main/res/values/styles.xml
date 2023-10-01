@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="TextViewBody2" parent="TextAppearance.MaterialComponents.Body2">
+        <item name="fontFamily">@font/vazir_regular</item>
+        <item name="android:fontFamily">@font/vazir_regular</item>
+    </style>
+
+    <style name="TextViewCaption" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="fontFamily">@font/vazir_regular</item>
+        <item name="android:fontFamily">@font/vazir_regular</item>
+    </style>
+
     <style name="TextAppearance.Audio.BodySmall" parent="TextAppearance.Material3.BodySmall">
         <item name="fontFamily">@font/vazir_regular</item>
         <item name="android:fontFamily">@font/vazir_regular</item>
@@ -72,6 +82,20 @@
         <item name="android:textAppearance">@style/TextAppearance.Audio.BodyLarge</item>
     </style>
 
+    <style name="Theme.Audio.MaterialAlertDialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="materialAlertDialogTitleTextStyle">@style/MaterialAlertDialog.Audio.Title</item>
+        <item name="android:backgroundTint">@color/main_bg</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.MaterialAlertDialog.Rounded</item>
+    </style>
+
+    <style name="MaterialAlertDialog.Audio.Title" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
+        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Headline6</item>
+    </style>
+
+    <style name="ShapeAppearanceOverlay.MaterialAlertDialog.Rounded" parent="">
+        <item name="cornerSize">@dimen/spacing_small</item>
+    </style>
+
     <style name="Widget.Audio.FloatingActionButton.PlayPause" parent="Widget.MaterialComponents.FloatingActionButton">
         <item name="backgroundTint">@color/blue_500</item>
         <item name="tint">@color/grey_50</item>
@@ -83,7 +107,7 @@
     </style>
 
     <style name="BtnOverflowStyle">
-        <item name="srcCompat">@drawable/ic_more_vert</item>
+        <item name="srcCompat">@drawable/ic_more_horiz</item>
         <item name="android:layout_width">45dp</item>
         <item name="android:layout_height">45dp</item>
         <item name="android:scaleType">center</item>
@@ -94,13 +118,6 @@
 
     <style name="ImageView.Cover" parent="">
         <item name="cornerSize">@dimen/spacing_small</item>
-    </style>
-
-    <style name="ImageView.ImageCurvedRounded" parent="">
-        <item name="cornerSizeTopLeft">@dimen/spacing_small</item>
-        <item name="cornerSizeTopRight">@dimen/spacing_small</item>
-        <item name="cornerSizeBottomLeft">0dp</item>
-        <item name="cornerSizeBottomRight">0dp</item>
     </style>
 
     <style name="ShapeAppearance.SmallComponent" parent="ShapeAppearance.MaterialComponents.SmallComponent">

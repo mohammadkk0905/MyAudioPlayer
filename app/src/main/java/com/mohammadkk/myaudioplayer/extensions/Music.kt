@@ -10,6 +10,7 @@ import android.provider.MediaStore
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import com.mohammadkk.myaudioplayer.Constant
+import com.mohammadkk.myaudioplayer.models.FileItem
 import com.mohammadkk.myaudioplayer.models.Song
 import java.io.File
 import java.text.SimpleDateFormat
@@ -60,13 +61,11 @@ fun Int.toLocaleYear(): String {
     } else "-"
 }
 fun Song.toProviderUri(context: Context): Uri {
-    val uri = Uri.parse(path)
-    return if (uri.scheme == "content") {
-        uri
+    return if (isOTGMode() || path.startsWith("content://")) {
+        Uri.parse(path)
     } else {
-        val newPath = if (uri.toString().startsWith('/')) uri.toString() else uri.path
-        val file = File(newPath ?: return id.toContentUri())
-        return try {
+        try {
+            val file = File(path)
             if (Constant.isNougatPlus()) {
                 val applicationId = context.packageName ?: context.applicationContext.packageName
                 FileProvider.getUriForFile(context, "$applicationId.provider", file)
@@ -79,7 +78,7 @@ fun Song.toProviderUri(context: Context): Uri {
 fun Song.getTrackArt(context: Context): Bitmap? {
     val mmr = MediaMetadataRetriever()
     return try {
-        mmr.setDataSource(context, id.toContentUri())
+        mmr.setDataSource(context, requireContentUri())
         val art = mmr.embeddedPicture
         mmr.release()
         if (art == null) return null
@@ -97,4 +96,13 @@ fun Song.getAlbumArt(context: Context): Bitmap? {
     } catch (e: Exception) {
         null
     }
+}
+fun FileItem.parseSong(id: Int = 0): Song? {
+    val title = filename?.substringBeforeLast('.', "")
+    val album = "Unknown album"
+    val artist = "Unknown artist"
+    if (title == null || title == "") return null
+    val path = contentUri.toString()
+    val dateAdded = modified.toInt()
+    return Song(id.toLong(), 0, 0, title, album, artist, path, 0, 0, dateAdded, modified)
 }

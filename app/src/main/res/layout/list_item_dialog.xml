@@ -4,11 +4,11 @@
     android:id="@+id/title"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/colorSurface"
+    android:background="@color/main_bg"
     android:ellipsize="end"
     android:maxLines="1"
     android:paddingHorizontal="@dimen/spacing_mid_medium"
     android:paddingVertical="@dimen/spacing_tiny"
     android:textAppearance="@style/TextAppearance.Audio.BodySmall"
-    android:textColor="@color/grey_900"
+    android:textColor="?android:attr/textColorPrimary"
     tools:viewBindingIgnore="true" />
