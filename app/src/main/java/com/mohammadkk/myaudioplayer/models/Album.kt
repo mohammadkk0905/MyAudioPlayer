@@ -10,7 +10,7 @@ data class Album(
     val year: Int get() = getSafeSong().year
     val trackCount: Int get() = songs.size
 
-    private fun getSafeSong(): Song {
+    fun getSafeSong(): Song {
         return songs.firstOrNull() ?: Song.emptySong
     }
 }

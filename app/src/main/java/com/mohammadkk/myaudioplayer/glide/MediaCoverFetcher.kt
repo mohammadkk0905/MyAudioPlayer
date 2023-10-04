@@ -1,38 +1,34 @@
-package com.mohammadkk.myaudioplayer.glide.loader
+package com.mohammadkk.myaudioplayer.glide
 
+import android.content.Context
 import android.media.MediaMetadataRetriever
 import androidx.core.net.toUri
 import com.bumptech.glide.Priority
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.data.DataFetcher
-import com.mohammadkk.myaudioplayer.BaseSettings
+import com.mohammadkk.myaudioplayer.extensions.toContentUri
 import com.mohammadkk.myaudioplayer.utils.FileUtils
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
 
-class AudioFileCoverFetcher(private val model: AudioFileCover) : DataFetcher<InputStream> {
-    private var stream: InputStream? = null
-
+class MediaCoverFetcher(private val context: Context, private val cover: MediaCover) : DataFetcher<InputStream> {
+    private var mStream: InputStream? = null
     override fun loadData(priority: Priority, callback: DataFetcher.DataCallback<in InputStream>) {
-        val settings = BaseSettings.getInstance()
         val retriever = MediaMetadataRetriever()
         try {
-            if (model.filePath.startsWith("content://")) {
-                retriever.setDataSource(
-                    settings.getContext(),
-                    model.filePath.toUri()
-                )
+            if (cover.path.startsWith("content://")) {
+                retriever.setDataSource(context, cover.path.toUri())
             } else {
-                retriever.setDataSource(model.filePath)
+                retriever.setDataSource(context, cover.trackId.toContentUri())
             }
             val picture = retriever.embeddedPicture
-            stream = if (picture != null) {
+            mStream = if (picture != null) {
                 ByteArrayInputStream(picture)
             } else {
-                FileUtils.fallback(model.filePath)
+                FileUtils.fallback(cover.path)
             }
-            callback.onDataReady(stream)
+            callback.onDataReady(mStream)
         } catch (e: Exception) {
             callback.onLoadFailed(e)
         } finally {
@@ -40,15 +36,16 @@ class AudioFileCoverFetcher(private val model: AudioFileCover) : DataFetcher<Inp
         }
     }
     override fun cleanup() {
-        if (stream != null) {
+        if (mStream != null) {
             try {
-                stream?.close()
-            } catch (ignore: IOException) {
+                mStream?.close()
+            } catch (ignored: IOException) {
+                //can't do much about it
             }
         }
     }
     override fun cancel() {
-        // cannot cancel
+        //empty cancel
     }
     override fun getDataClass(): Class<InputStream> {
         return InputStream::class.java

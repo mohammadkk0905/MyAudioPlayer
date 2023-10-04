@@ -55,6 +55,16 @@ object Libraries {
         }
         return songs
     }
+    fun getAlbumCount(list: List<Song>): Int {
+        val set = HashSet<Long>()
+        var count = 0
+        for (song in list) {
+            if (set.add(song.albumId)) {
+                count++
+            }
+        }
+        return count
+    }
     private fun getSongFromCursorImpl(cursor: Cursor): Song {
         val id = cursor.getLong(0)
         val albumId = cursor.getLong(1)

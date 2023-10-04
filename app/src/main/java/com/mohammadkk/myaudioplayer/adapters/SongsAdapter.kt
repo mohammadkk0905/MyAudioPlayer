@@ -6,13 +6,14 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.PopupMenu
 import androidx.appcompat.view.ActionMode
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.signature.MediaStoreSignature
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.request.RequestOptions
 import com.google.gson.GsonBuilder
 import com.mohammadkk.myaudioplayer.BaseSettings
 import com.mohammadkk.myaudioplayer.Constant
@@ -28,10 +29,10 @@ import com.mohammadkk.myaudioplayer.extensions.notifyOnDataChanged
 import com.mohammadkk.myaudioplayer.extensions.setTitleColor
 import com.mohammadkk.myaudioplayer.extensions.shareSongIntent
 import com.mohammadkk.myaudioplayer.extensions.shareSongsIntent
-import com.mohammadkk.myaudioplayer.extensions.toAlbumArtURI
 import com.mohammadkk.myaudioplayer.extensions.toFormattedDate
 import com.mohammadkk.myaudioplayer.extensions.toFormattedDuration
-import com.mohammadkk.myaudioplayer.glide.loader.AudioFileCover
+import com.mohammadkk.myaudioplayer.glide.CoverMode
+import com.mohammadkk.myaudioplayer.glide.MediaCover
 import com.mohammadkk.myaudioplayer.listeners.AdapterListener
 import com.mohammadkk.myaudioplayer.models.Song
 import com.mohammadkk.myaudioplayer.models.StateMode
@@ -215,6 +216,28 @@ class SongsAdapter(
             "DELETE_SONGS"
         )
     }
+    private fun loadCover(imageView: ImageView, song: Song) {
+        val default = context.getDrawableCompat(R.drawable.ic_audiotrack)
+        when (val mode = settings.coverMode) {
+            CoverMode.OFF -> imageView.setImageDrawable(default)
+            else -> {
+                val cover: Any = if (mode == CoverMode.MEDIA_STORE) {
+                    song.requireArtworkUri()
+                } else {
+                    MediaCover(song.id, song.path, song.dateModified)
+                }
+                Glide.with(context)
+                    .load(cover)
+                    .apply(
+                        RequestOptions()
+                            .placeholder(default)
+                            .error(default)
+                            .transform(CenterCrop())
+                    )
+                    .into(imageView)
+            }
+        }
+    }
     inner class SongHolder(private val binding: ItemSongsBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bindItems(song: Song) {
             with(binding) {
@@ -237,19 +260,7 @@ class SongsAdapter(
                 } else {
                     tvTrackHistroyItem.text = song.dateAdded.toFormattedDate()
                 }
-                val defIcon = context.getDrawableCompat(R.drawable.ic_audiotrack)
-                val dataImage: Any = if (mode != "OTG") {
-                    song.albumId.toAlbumArtURI()
-                } else AudioFileCover(song.path)
-                Glide.with(context)
-                    .asBitmap()
-                    .diskCacheStrategy(DiskCacheStrategy.NONE)
-                    .error(defIcon)
-                    .placeholder(defIcon)
-                    .signature(MediaStoreSignature("", song.dateModified, 0))
-                    .load(dataImage)
-                    .into(binding.imgArtTrackItem)
-
+                loadCover(imgArtTrackItem, song)
                 root.setOnClickListener {
                     if (isActionMode) {
                         setItemViewSelected(absoluteAdapterPosition)

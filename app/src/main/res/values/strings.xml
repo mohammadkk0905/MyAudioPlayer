@@ -8,12 +8,13 @@
     <string name="no">No</string>
     <string name="on_close_activity">Stop playback ?</string>
     <string name="songs">Songs</string>
-    <string name="albums">Albums</string>
-    <plurals name="albums_plural">
+    <plurals name="songs_plural">
         <item quantity="one">%d Song</item>
         <item quantity="other">%d Songs</item>
     </plurals>
+    <string name="albums">Albums</string>
     <string name="artists">Artists</string>
+    <string name="artists_symbol">%1d Albums, %2d Songs</string>
     <string name="settings">"Settings"</string>
     <string name="search">Search</string>
     <string name="order_by">Order by</string>

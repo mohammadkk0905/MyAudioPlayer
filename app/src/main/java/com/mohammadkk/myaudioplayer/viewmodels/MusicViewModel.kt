@@ -122,22 +122,23 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
     private fun splitsIntoArtists(items: List<Song>): List<Artist> {
         val itemsMap = linkedMapOf<Long, Artist>()
-        val artists = arrayListOf<Artist>()
-        items.forEach { song ->
-            val artist: Artist
+        for (song in items) {
             if (itemsMap.containsKey(song.artistId)) {
-                artist = itemsMap[song.artistId]!!
+                val artist = itemsMap[song.artistId]!!
                 artist.duration += song.duration
                 artist.songs.add(song)
+                itemsMap[song.artistId] = artist
             } else {
                 val list = mutableListOf<Song>()
                 list.add(song)
-                artist = Artist(song.artistId, song.duration, list)
-                artists.add(artist)
+                val artist = Artist(song.artistId, song.duration, 0, list)
+                itemsMap[song.artistId] = artist
             }
-            itemsMap[song.artistId] = artist
         }
-        return artists
+        return itemsMap.values.map { artist ->
+            artist.albumCount = Libraries.getAlbumCount(artist.songs)
+            artist
+        }
     }
     fun forceReload(mode: Int) = viewModelScope.launch(IO) {
         when (mode) {

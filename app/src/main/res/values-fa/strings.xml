@@ -8,12 +8,13 @@
     <string name="no">نه</string>
     <string name="on_close_activity">توقف پخش ؟</string>
     <string name="songs">آهنگ‌ها</string>
-    <string name="albums">آلبوم‌ها</string>
-    <plurals name="albums_plural">
+    <plurals name="songs_plural">
         <item quantity="one">%d آهنگ</item>
         <item quantity="other">%d آهنگ</item>
     </plurals>
+    <string name="albums">آلبوم‌ها</string>
     <string name="artists">هنرمندان</string>
+    <string name="artists_symbol">%1d آلبوم، %2d آهنگ</string>
     <string name="settings">"تنظیمات"</string>
     <string name="search">جستجو کردن</string>
     <string name="order_by">مرتب سازی بر اساس</string>

@@ -15,6 +15,10 @@ import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.request.RequestOptions
+import com.mohammadkk.myaudioplayer.BaseSettings
 import com.mohammadkk.myaudioplayer.Constant
 import com.mohammadkk.myaudioplayer.R
 import com.mohammadkk.myaudioplayer.activities.PlayerActivity
@@ -23,15 +27,12 @@ import com.mohammadkk.myaudioplayer.extensions.applyColor
 import com.mohammadkk.myaudioplayer.extensions.getColorCompat
 import com.mohammadkk.myaudioplayer.extensions.getDrawableCompat
 import com.mohammadkk.myaudioplayer.extensions.getPlayingIcon
-import com.mohammadkk.myaudioplayer.extensions.getTrackArt
 import com.mohammadkk.myaudioplayer.extensions.sendIntent
+import com.mohammadkk.myaudioplayer.glide.CoverMode
+import com.mohammadkk.myaudioplayer.glide.MediaCover
 import com.mohammadkk.myaudioplayer.models.Song
 import com.mohammadkk.myaudioplayer.services.MusicService
 import com.mohammadkk.myaudioplayer.viewmodels.PlaybackViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.Locale
 
 class NowPlayingFragment : Fragment(R.layout.fragment_now_playing) {
@@ -75,19 +76,7 @@ class NowPlayingFragment : Fragment(R.layout.fragment_now_playing) {
         }
     }
     private fun initSongInfo(song: Song) {
-        val placeholder = getPlaceholder()
-        CoroutineScope(Dispatchers.IO).launch {
-            val songCover = song.getTrackArt(requireContext())
-            withContext(Dispatchers.Main) {
-                if (songCover != null) {
-                    binding.trackImage.setImageBitmap(songCover)
-                    binding.trackImage.scaleType = ImageView.ScaleType.CENTER_CROP
-                } else {
-                    binding.trackImage.setImageDrawable(placeholder)
-                    binding.trackImage.scaleType = ImageView.ScaleType.CENTER
-                }
-            }
-        }
+        loadCover(binding.trackImage, song)
         val gravity = getGravity()
         if (binding.tvInfoTrack.gravity != gravity) binding.tvInfoTrack.gravity = gravity
         binding.tvInfoTrack.text = HtmlCompat.fromHtml(
@@ -95,6 +84,29 @@ class NowPlayingFragment : Fragment(R.layout.fragment_now_playing) {
             HtmlCompat.FROM_HTML_MODE_LEGACY
         )
         binding.songProgress.max = song.duration / 1000
+    }
+    private fun loadCover(imageView: ImageView, song: Song) {
+        val settings = BaseSettings.getInstance()
+        val default = getPlaceholder()
+        when (val mode = settings.coverMode) {
+            CoverMode.OFF -> imageView.setImageDrawable(default)
+            else -> {
+                val cover: Any = if (mode == CoverMode.MEDIA_STORE) {
+                    song.requireArtworkUri()
+                } else {
+                    MediaCover(song.id, song.path, song.dateModified)
+                }
+                Glide.with(requireActivity())
+                    .load(cover)
+                    .apply(
+                        RequestOptions()
+                            .placeholder(default)
+                            .error(default)
+                            .transform(CenterCrop())
+                    )
+                    .into(imageView)
+            }
+        }
     }
     @SuppressLint("RtlHardcoded")
     private fun getGravity(): Int {

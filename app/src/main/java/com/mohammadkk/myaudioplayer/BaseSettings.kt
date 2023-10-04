@@ -7,13 +7,13 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
 import com.mohammadkk.myaudioplayer.extensions.getStringOrDefault
+import com.mohammadkk.myaudioplayer.glide.CoverMode
 import com.mohammadkk.myaudioplayer.models.Song
 import com.mohammadkk.myaudioplayer.models.StateMode
 import com.mohammadkk.myaudioplayer.utils.PlaybackRepeat
 import java.lang.reflect.Type
 
 class BaseSettings(app: Application) {
-    private val application = app
     private val prefs = PreferenceManager.getDefaultSharedPreferences(app.applicationContext)
     private val gson = GsonBuilder().create()
     private val songType = object : TypeToken<Pair<Song, Int>>() {}.type
@@ -70,9 +70,10 @@ class BaseSettings(app: Application) {
         get() = prefs.getStringOrDefault("otg_partition", "")
         set(value) = prefs.edit { putString("otg_partition", value) }
 
-    fun getContext(): Application {
-        return application
-    }
+    var coverMode: CoverMode
+        get() = CoverMode.getCoverMode(prefs.getInt("cover_mode", Int.MIN_VALUE))
+        set(value) = prefs.edit { putInt("cover_mode", value.ordinal) }
+
     private fun <T> getObject(key: String, type: Type): T? {
         val json = prefs.getString(key, null) ?: return null
         return try {

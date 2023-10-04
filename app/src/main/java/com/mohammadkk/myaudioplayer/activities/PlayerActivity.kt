@@ -9,13 +9,13 @@ import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
+import android.widget.ImageView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.signature.MediaStoreSignature
+import com.bumptech.glide.request.RequestOptions
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.mohammadkk.myaudioplayer.BaseSettings
@@ -31,7 +31,8 @@ import com.mohammadkk.myaudioplayer.extensions.getPrimaryColor
 import com.mohammadkk.myaudioplayer.extensions.sendIntent
 import com.mohammadkk.myaudioplayer.extensions.toast
 import com.mohammadkk.myaudioplayer.extensions.updateIconTint
-import com.mohammadkk.myaudioplayer.glide.loader.AudioFileCover
+import com.mohammadkk.myaudioplayer.glide.CoverMode
+import com.mohammadkk.myaudioplayer.glide.MediaCover
 import com.mohammadkk.myaudioplayer.models.Song
 import com.mohammadkk.myaudioplayer.services.MusicService
 import com.mohammadkk.myaudioplayer.ui.MusicSeekBar
@@ -105,15 +106,7 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
     private fun initializeSongInfo(song: Song) {
-        Glide.with(applicationContext)
-            .asBitmap()
-            .diskCacheStrategy(DiskCacheStrategy.NONE)
-            .error(createPlaceholder())
-            .placeholder(createPlaceholder())
-            .signature(MediaStoreSignature("", song.dateModified, 0))
-            .load(AudioFileCover(song.path))
-            .into(binding.playbackCover)
-
+        loadCover(binding.playbackCover, song)
         binding.playbackSong.text = song.title
         binding.playbackAlbum.text = song.album
         binding.playbackArtist.text = song.artist
@@ -123,6 +116,29 @@ class PlayerActivity : AppCompatActivity() {
             MusicService.mSongs.size
         )
         binding.playbackSeekBar.durationMills = song.duration
+    }
+    private fun loadCover(imageView: ImageView, song: Song) {
+        val settings = BaseSettings.getInstance()
+        val default = createPlaceholder()
+        when (val mode = settings.coverMode) {
+            CoverMode.OFF -> imageView.setImageDrawable(default)
+            else -> {
+                val cover: Any = if (mode == CoverMode.MEDIA_STORE) {
+                    song.requireArtworkUri()
+                } else {
+                    MediaCover(song.id, song.path, song.dateModified)
+                }
+                Glide.with(this)
+                    .load(cover)
+                    .apply(
+                        RequestOptions()
+                            .placeholder(default)
+                            .error(default)
+                            .centerCrop()
+                    )
+                    .into(imageView)
+            }
+        }
     }
     private fun createPlaceholder(): Drawable? {
         if (mPlaceholder == null) {

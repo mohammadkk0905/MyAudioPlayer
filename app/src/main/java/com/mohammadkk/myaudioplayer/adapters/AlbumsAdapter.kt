@@ -4,6 +4,7 @@ import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -14,10 +15,13 @@ import com.mohammadkk.myaudioplayer.Constant
 import com.mohammadkk.myaudioplayer.R
 import com.mohammadkk.myaudioplayer.activities.TracksActivity
 import com.mohammadkk.myaudioplayer.databinding.ItemAlbumsBinding
+import com.mohammadkk.myaudioplayer.extensions.getDrawableCompat
 import com.mohammadkk.myaudioplayer.extensions.notifyOnDataChanged
 import com.mohammadkk.myaudioplayer.extensions.toAlbumArtURI
 import com.mohammadkk.myaudioplayer.extensions.toFormattedDuration
 import com.mohammadkk.myaudioplayer.extensions.toLocaleYear
+import com.mohammadkk.myaudioplayer.glide.CoverMode
+import com.mohammadkk.myaudioplayer.glide.MediaCover
 import com.mohammadkk.myaudioplayer.models.Album
 import com.mohammadkk.myaudioplayer.utils.Libraries
 import me.zhanghai.android.fastscroll.PopupTextProvider
@@ -64,23 +68,38 @@ class AlbumsAdapter(
             )
         }
     }
+    private fun loadCover(imageView: ImageView, album: Album) {
+        val default = context.getDrawableCompat(R.drawable.ic_album)
+        when (val mode = settings.coverMode) {
+            CoverMode.OFF -> imageView.setImageDrawable(default)
+            else -> {
+                val cover: Any = if (mode == CoverMode.MEDIA_STORE) {
+                    album.id.toAlbumArtURI()
+                } else {
+                    val song = album.getSafeSong()
+                    MediaCover(song.id, song.path, song.dateModified)
+                }
+                Glide.with(context)
+                    .load(cover)
+                    .apply(
+                        RequestOptions()
+                            .placeholder(default)
+                            .error(default)
+                            .transform(CenterCrop())
+                    )
+                    .into(imageView)
+            }
+        }
+    }
     inner class AlbumHolder(private val binding: ItemAlbumsBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bindItems(album: Album) {
             with(binding) {
                 tvNameItem.text = album.title
                 tvTrackCountItem.text = context.resources.getQuantityString(
-                    R.plurals.albums_plural,
+                    R.plurals.songs_plural,
                     album.trackCount, album.trackCount
                 )
-                Glide.with(context)
-                    .load(album.id.toAlbumArtURI())
-                    .apply(
-                        RequestOptions()
-                            .placeholder(R.drawable.ic_album)
-                            .error(R.drawable.ic_album)
-                            .transform(CenterCrop())
-                    )
-                    .into(imgCoverItem)
+                loadCover(imgCoverItem, album)
                 root.setOnClickListener {
                     if (!Constant.isBlockingClick()) {
                         startTracks(album)
